@@ -34,6 +34,20 @@ type R2Config = {
   publicBaseUrl: string;
 };
 
+function normalizePublicBaseUrl(value: string) {
+  const trimmed = value.trim();
+  const markdownLink = /^\[[^\]]+\]\((https?:\/\/[^)]+)\)\/?$/.exec(trimmed);
+  const candidate = markdownLink?.[1] ?? trimmed;
+
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== "https:") return null;
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
 function readR2Config(): R2Config | null {
   const config = {
     accountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID,
@@ -44,13 +58,15 @@ function readR2Config(): R2Config | null {
   };
 
   if (Object.values(config).some((value) => !value)) return null;
+  const publicBaseUrl = normalizePublicBaseUrl(config.publicBaseUrl!);
+  if (!publicBaseUrl) return null;
 
   return {
     accountId: config.accountId!,
     accessKeyId: config.accessKeyId!,
     secretAccessKey: config.secretAccessKey!,
     bucket: config.bucket!,
-    publicBaseUrl: config.publicBaseUrl!.replace(/\/$/, ""),
+    publicBaseUrl,
   };
 }
 
