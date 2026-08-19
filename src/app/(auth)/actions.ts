@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   forgotPasswordSchema,
@@ -33,17 +32,18 @@ export async function registerAction(_state: ActionState, formData: FormData): P
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: firstError(parsed.error) };
 
-  const admin = createAdminClient();
-  const { data, error } = await admin.auth.admin.createUser({
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
-    email_confirm: true,
-    user_metadata: {
-      signup_type: "restaurant_owner",
-      full_name: parsed.data.fullName,
-      restaurant_name: parsed.data.restaurantName,
-      restaurant_slug: parsed.data.slug,
-      phone: parsed.data.phone,
+    options: {
+      data: {
+        signup_type: "restaurant_owner",
+        full_name: parsed.data.fullName,
+        restaurant_name: parsed.data.restaurantName,
+        restaurant_slug: parsed.data.slug,
+        phone: parsed.data.phone,
+      },
     },
   });
 
@@ -57,14 +57,8 @@ export async function registerAction(_state: ActionState, formData: FormData): P
     return { error: "No se pudo completar el registro. Inténtalo de nuevo." };
   }
 
-  const supabase = await createClient();
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  });
-
-  if (signInError) {
-    return { error: "La cuenta fue creada, pero no se pudo iniciar sesión. Entra desde la página de acceso." };
+  if (!data.session) {
+    return { error: "La cuenta fue creada, pero Supabase requiere confirmación de correo. Revisa la configuración Auth." };
   }
 
   redirect("/dashboard");
@@ -81,7 +75,8 @@ export async function forgotPasswordAction(_state: ActionState, formData: FormDa
   if (!parsed.success) return { error: firstError(parsed.error) };
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (vercelUrl ? `https://${vercelUrl}` : "http://localhost:3000");
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${siteUrl}/auth/callback?next=/restablecer-contrasena`,
   });
