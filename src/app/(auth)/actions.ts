@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { REMEMBER_ME_MAX_AGE, SESSION_MODE_COOKIE } from "@/lib/auth/session";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   forgotPasswordSchema,
@@ -23,6 +24,21 @@ function getSiteUrl() {
   const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
   const value = process.env.NEXT_PUBLIC_SITE_URL ?? (vercelUrl ? `https://${vercelUrl}` : "http://localhost:3000");
   return value.replace(/\/$/, "");
+}
+
+async function isRestaurantSlugTaken(slug: string) {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("restaurants").select("id").eq("slug", slug).maybeSingle();
+
+  if (error) {
+    console.error("Unable to validate restaurant slug availability", {
+      code: error.code,
+      message: error.message,
+    });
+    return null;
+  }
+
+  return Boolean(data);
 }
 
 export async function loginAction(_state: ActionState, formData: FormData): Promise<ActionState> {
@@ -51,6 +67,10 @@ export async function loginAction(_state: ActionState, formData: FormData): Prom
 export async function registerAction(_state: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: firstError(parsed.error) };
+
+  const slugTaken = await isRestaurantSlugTaken(parsed.data.slug);
+  if (slugTaken === true) return { error: "Ese identificador de menú ya está en uso. Elige uno diferente." };
+  if (slugTaken === null) return { error: "No pudimos validar el identificador. Inténtalo nuevamente." };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -93,7 +113,22 @@ export async function verifyRegistrationCodeAction(_state: ActionState, formData
     type: "email",
   });
 
-  if (error) return { error: "El código no es válido. Usa únicamente el código más reciente que recibiste." };
+  if (error) {
+    console.error("Registration OTP verification failed", {
+      code: error.code,
+      status: error.status,
+      message: error.message,
+    });
+
+    if (error.message.toLowerCase().includes("database")) {
+      return {
+        error:
+          "El código coincide, pero no pudimos crear el restaurante porque su identificador ya está en uso. Vuelve al registro y elige otro.",
+      };
+    }
+
+    return { error: "El código no es válido. Usa únicamente el código más reciente que recibiste." };
+  }
   redirect("/dashboard");
 }
 
