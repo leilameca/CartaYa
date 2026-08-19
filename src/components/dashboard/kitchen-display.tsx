@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, BellRing, Check, ChefHat, Clock3, Loader2, MoveRight, Volume2 } from "lucide-react";
+import { advanceKitchenOrderAction } from "@/app/dashboard/cocina/actions";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { orderTime, shortOrderId } from "@/lib/order-display";
 import { cn } from "@/lib/utils";
@@ -121,7 +122,7 @@ export function KitchenDisplay({
     if (order.status === "nuevo") beep();
   }, [beep]);
 
-  const { orders, setOrders, connection, supabase } = useRealtimeOrders({
+  const { orders, setOrders, connection } = useRealtimeOrders({
     initialOrders,
     restaurantId,
     activeOnly: true,
@@ -155,15 +156,11 @@ export function KitchenDisplay({
     const previous = orders;
     setOrders((current) => current.map((entry) => entry.id === order.id ? { ...entry, status: column.next } : entry));
 
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: column.next })
-      .eq("id", order.id)
-      .eq("restaurant_id", restaurantId);
+    const result = await advanceKitchenOrderAction(order.id, column.next);
 
-    if (error) {
+    if (result.error) {
       setOrders(previous);
-      setMessage({ error: "No se pudo actualizar el pedido. Comprueba la conexión e inténtalo otra vez." });
+      setMessage({ error: result.error });
     } else {
       setMessage({ success: `Pedido #${shortOrderId(order.id)} actualizado.` });
     }
@@ -209,4 +206,3 @@ export function KitchenDisplay({
     </main>
   );
 }
-

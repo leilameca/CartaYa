@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChefHat, CreditCard, LayoutDashboard, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { ChefHat, CreditCard, Crown, LayoutDashboard, LockKeyhole, QrCode, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { hasTier, type SubscriptionTier } from "@/lib/subscriptions";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/dashboard", label: "Inicio", icon: LayoutDashboard },
   { href: "/dashboard/menu", label: "Gestor de menú", icon: UtensilsCrossed },
-  { href: "/dashboard/pedidos", label: "Pedidos", icon: ShoppingBag },
-  { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat },
+  { href: "/dashboard/pedidos", label: "Pedidos", icon: ShoppingBag, required: "plus" as const },
+  { href: "/dashboard/qr", label: "Códigos QR", icon: QrCode },
+  { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat, required: "pro" as const },
   { href: "/dashboard/plan", label: "Mi plan", icon: CreditCard },
 ];
 
-export function DashboardNav({ mobile = false }: { mobile?: boolean }) {
+export function DashboardNav({ mobile = false, tier }: { mobile?: boolean; tier: SubscriptionTier }) {
   const pathname = usePathname();
 
   return (
@@ -21,10 +23,14 @@ export function DashboardNav({ mobile = false }: { mobile?: boolean }) {
       {links.map((link) => {
         const active = link.href === "/dashboard" ? pathname === link.href : pathname.startsWith(link.href);
         const Icon = link.icon;
+        const required = "required" in link ? link.required : undefined;
+        const locked = required ? !hasTier(tier, required) : false;
+        const href = locked ? `/dashboard/plan?required=${required}` : link.href;
         return (
-          <Link key={link.href} href={link.href} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors", mobile && "shrink-0", active ? "bg-brand-orange text-white shadow-sm" : "text-slate-600 hover:bg-slate-100 hover:text-brand-navy")}>
+          <Link key={link.href} href={href} title={locked ? `Requiere plan ${required === "pro" ? "Pro" : "Plus"}` : undefined} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors", mobile && "shrink-0", active ? "bg-brand-orange text-white shadow-sm" : "text-slate-600 hover:bg-slate-100 hover:text-brand-navy")}>
             <Icon className="h-4 w-4" />
             {link.label}
+            {locked ? <span className="ml-auto flex items-center gap-1 text-[10px] font-extrabold uppercase"><LockKeyhole className="size-3" />{required === "pro" ? <Crown className="size-3 text-amber-500" /> : "Plus"}</span> : null}
           </Link>
         );
       })}

@@ -296,6 +296,18 @@ export type Database = {
         Args: { target_restaurant_id: string }
         Returns: boolean
       }
+      can_use_kds: {
+        Args: { target_restaurant_id: string }
+        Returns: boolean
+      }
+      can_use_orders: {
+        Args: { target_restaurant_id: string }
+        Returns: boolean
+      }
+      can_use_table_qr: {
+        Args: { target_restaurant_id: string }
+        Returns: boolean
+      }
       complete_restaurant_owner_onboarding: {
         Args: {
           p_phone: string

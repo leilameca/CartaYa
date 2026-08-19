@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { REMEMBER_ME_MAX_AGE, SESSION_MODE_COOKIE } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getSiteUrl } from "@/lib/site-url";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -18,12 +19,6 @@ export type ActionState = { error?: string; success?: string };
 
 function firstError(error: { issues: { message: string }[] }) {
   return error.issues[0]?.message ?? "Revisa los datos del formulario.";
-}
-
-function getSiteUrl() {
-  const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
-  const value = process.env.NEXT_PUBLIC_SITE_URL ?? (vercelUrl ? `https://${vercelUrl}` : "http://localhost:3000");
-  return value.replace(/\/$/, "");
 }
 
 async function isRestaurantSlugTaken(slug: string) {

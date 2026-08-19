@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
           <p className="truncate text-sm font-semibold text-brand-navy">{restaurant?.name ?? "Tu restaurante"}</p>
           <p className="mt-1 text-xs font-medium uppercase tracking-wider text-brand-green">Plan {restaurant?.subscription_tier ?? "gratis"}</p>
         </div>
-        <DashboardNav />
+        <DashboardNav tier={restaurant?.subscription_tier ?? "gratis"} />
         <form action={logoutAction} className="mt-auto border-t p-4">
           <Button type="submit" variant="ghost" className="w-full justify-start gap-3 text-slate-600"><LogOut className="h-4 w-4" />Cerrar sesión</Button>
         </form>
@@ -36,7 +36,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
             <BrandLogo className="w-28" priority />
             <form action={logoutAction}><Button type="submit" variant="ghost" size="icon" aria-label="Cerrar sesión"><LogOut className="h-5 w-5" /></Button></form>
           </div>
-          <DashboardNav mobile />
+          <DashboardNav mobile tier={restaurant?.subscription_tier ?? "gratis"} />
         </header>
         {children}
       </div>

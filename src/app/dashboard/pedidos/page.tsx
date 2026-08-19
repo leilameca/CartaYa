@@ -10,15 +10,15 @@ export default async function OrdersPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("restaurant_id, restaurants(name)")
+    .select("restaurant_id, restaurants(name, subscription_tier)")
     .eq("id", user.id)
     .single();
   if (!profile) redirect("/completar-registro");
 
-  const relation = profile.restaurants as unknown as { name: string } | { name: string }[] | null;
+  const relation = profile.restaurants as unknown as { name: string; subscription_tier: "gratis" | "plus" | "pro" } | { name: string; subscription_tier: "gratis" | "plus" | "pro" }[] | null;
   const restaurant = Array.isArray(relation) ? relation[0] : relation;
+  if (restaurant?.subscription_tier === "gratis") redirect("/dashboard/plan?required=plus");
   const orders = await fetchRestaurantOrders(supabase, profile.restaurant_id);
 
   return <OrdersManager restaurantId={profile.restaurant_id} restaurantName={restaurant?.name ?? "Tu restaurante"} initialOrders={orders} />;
 }
-

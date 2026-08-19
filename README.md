@@ -11,7 +11,7 @@ Proyecto Supabase Cloud: `tiyikulmmbdehkpqevfk` (`us-east-1`).
 - Next.js 16 (App Router), TypeScript y Tailwind CSS
 - shadcn/ui (configurado en `components.json`)
 - Supabase Auth, Postgres, RLS y Realtime
-- Preparado para Vercel; Cloudflare Images/R2 se conectará en una fase posterior
+- Vercel para la app y Cloudflare R2 para las fotos de platos
 
 ## Puesta en marcha
 
@@ -109,6 +109,20 @@ Ambas pantallas se suscriben a `orders` mediante Supabase Realtime con filtro po
 
 ```bash
 npm run verify:orders-kds
+```
+
+## QR y niveles de suscripción
+
+`/dashboard/qr` genera un QR general para Gratis y QR permanentes por mesa para Plus/Pro. Cada código se descarga en PNG o SVG; el lote completo se genera en el navegador como ZIP, sin enviar los enlaces a un servicio externo. La pantalla también incluye una vista previa de parador de mesa.
+
+Los límites se aplican en tres capas: navegación y mensajes del dashboard, acciones del servidor y políticas RLS/privilegios de PostgreSQL. Gratis conserva el menú y un QR general (máximo 20 platos); Plus añade mesas, pedidos automáticos e historial; Pro añade KDS y cambios de estado. Al bajar un restaurante a Gratis, sus mesas se conservan para una futura mejora de plan, pero dejan de ser visibles por API y los QR antiguos ya no preseleccionan mesa.
+
+`/dashboard/plan` incluye la comparación completa. Durante esta etapa sin pagos, el propietario puede simular Gratis/Plus/Pro; el cambio real se guarda en Supabase y se refleja al recargar. Esta acción usa la clave de servidor únicamente después de validar la sesión y el rol `owner`.
+
+Después de aplicar las migraciones y desplegar, la prueba integrada valida RLS por nivel, QR de mesa, PNG/SVG/ZIP y bloqueo de URLs directas:
+
+```bash
+npm run verify:qr-entitlements
 ```
 
 > En Next.js 16 el archivo antes llamado `middleware.ts` se llama `proxy.ts`. `src/proxy.ts` cumple la misma función: renueva la sesión y protege `/dashboard/*`.
