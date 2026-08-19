@@ -14,11 +14,14 @@ export function AuthShell({
   footer?: React.ReactNode;
 }) {
   return (
-    <main className="min-h-screen bg-brand-gray p-3 sm:p-6 lg:p-8">
-      <div className="mx-auto grid min-h-[calc(100vh-1.5rem)] w-full max-w-[1440px] overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-2xl shadow-brand-navy/10 sm:min-h-[calc(100vh-3rem)] lg:grid-cols-[minmax(0,0.82fr)_minmax(520px,1.18fr)]">
-        <section className="flex items-center justify-center px-6 py-9 sm:px-10 lg:px-14 xl:px-20">
-          <div className="w-full max-w-md">
-            <Link href="/" className="mb-8 flex justify-center lg:justify-start" aria-label="Ir al inicio de CartaYa">
+    <main className="min-h-[100svh] bg-white">
+      <div className="grid min-h-[100svh] w-full lg:grid-cols-[minmax(440px,0.82fr)_minmax(0,1.18fr)]">
+        <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-8 sm:px-10 sm:py-12 lg:px-12 xl:px-20 2xl:px-24">
+          <div className="pointer-events-none absolute -left-28 -top-28 size-72 rounded-full bg-brand-green/[0.06] blur-3xl lg:hidden" />
+          <div className="pointer-events-none absolute -bottom-32 -right-24 size-80 rounded-full bg-brand-orange/[0.07] blur-3xl lg:hidden" />
+
+          <div className="relative w-full max-w-[460px]">
+            <Link href="/" className="mb-7 flex justify-center sm:mb-9 lg:justify-start" aria-label="Ir al inicio de CartaYa">
               <BrandLogo className="w-40 sm:w-44" priority />
             </Link>
             <div>
@@ -31,16 +34,16 @@ export function AuthShell({
           </div>
         </section>
 
-        <aside className="relative hidden min-h-full overflow-hidden bg-brand-navy lg:block">
+        <aside className="relative hidden min-h-[100svh] overflow-hidden bg-brand-navy lg:block">
           <Image
             src="/login-restaurant-hero.png"
             alt="Restaurante moderno usando el menú digital CartaYa desde un teléfono"
             fill
             priority
-            sizes="(min-width: 1280px) 58vw, 52vw"
-            className="object-cover object-[58%_center]"
+            sizes="(min-width: 1024px) 59vw, 100vw"
+            className="object-cover object-[62%_center]"
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-navy/10 via-transparent to-brand-orange/5" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-navy/15 via-transparent to-brand-orange/5" />
         </aside>
       </div>
     </main>
