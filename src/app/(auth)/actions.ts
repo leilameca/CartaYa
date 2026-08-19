@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { REMEMBER_ME_MAX_AGE, SESSION_MODE_COOKIE } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import {
   forgotPasswordSchema,
@@ -27,7 +29,17 @@ export async function loginAction(_state: ActionState, formData: FormData): Prom
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: firstError(parsed.error) };
 
-  const supabase = await createClient();
+  const rememberMe = formData.get("rememberMe") === "on";
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_MODE_COOKIE, rememberMe ? "persistent" : "session", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    ...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE } : {}),
+  });
+
+  const supabase = await createClient({ sessionOnly: !rememberMe });
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) return { error: "Correo o contraseña incorrectos." };
@@ -81,7 +93,7 @@ export async function verifyRegistrationCodeAction(_state: ActionState, formData
     type: "email",
   });
 
-  if (error) return { error: "El código es incorrecto o ya venció. Solicita uno nuevo." };
+  if (error) return { error: "El código no es válido. Usa únicamente el código más reciente que recibiste." };
   redirect("/dashboard");
 }
 
@@ -98,6 +110,8 @@ export async function resendRegistrationCodeAction(_state: ActionState, formData
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_MODE_COOKIE);
   redirect("/login");
 }
 
@@ -125,7 +139,7 @@ export async function verifyRecoveryCodeAction(_state: ActionState, formData: Fo
     type: "recovery",
   });
 
-  if (error) return { error: "El código es incorrecto o ya venció. Solicita uno nuevo." };
+  if (error) return { error: "El código no es válido. Usa únicamente el código más reciente que recibiste." };
   redirect("/restablecer-contrasena");
 }
 

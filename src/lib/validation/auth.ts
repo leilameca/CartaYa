@@ -22,7 +22,10 @@ export const registerSchema = z.object({
 export const forgotPasswordSchema = z.object({ email });
 export const verifyEmailCodeSchema = z.object({
   email,
-  token: z.string().trim().regex(/^\d{6}$/, "Escribe el código de 6 dígitos."),
+  token: z
+    .string()
+    .transform((value) => value.replace(/\D/g, ""))
+    .pipe(z.string().length(6, "Escribe el código de 6 dígitos.")),
 });
 
 export const restaurantOnboardingSchema = z.object({

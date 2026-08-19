@@ -1,11 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabasePublicEnv } from "@/lib/supabase/env";
+import { SESSION_MODE_COOKIE, withoutPersistence } from "@/lib/auth/session";
 import type { Database } from "@/types/database";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url, anonKey } = getSupabasePublicEnv();
+  const sessionOnly = request.cookies.get(SESSION_MODE_COOKIE)?.value === "session";
 
   const supabase = createServerClient<Database>(url, anonKey, {
     cookies: {
@@ -13,7 +15,9 @@ export async function updateSession(request: NextRequest) {
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, sessionOnly ? withoutPersistence(options) : options),
+        );
       },
     },
   });

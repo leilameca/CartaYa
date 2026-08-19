@@ -24,9 +24,6 @@ export default async function LoginPage({
       <GoogleAuthButton label="Entrar con Google" />
       <AuthDivider />
       <LoginForm redirectTo={redirectTo} />
-      <Link className="mt-4 block text-center text-sm text-brand-navy hover:underline" href="/recuperar-contrasena">
-        ¿Olvidaste tu contraseña?
-      </Link>
     </AuthShell>
   );
 }

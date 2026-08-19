@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 export function GoogleAuthButton({ label = "Continuar con Google" }: { label?: string }) {
   return (
     <form action={signInWithGoogleAction}>
-      <Button type="submit" variant="outline" className="w-full gap-3">
+      <Button type="submit" variant="outline" className="h-12 w-full gap-3 rounded-xl border-slate-200 bg-white font-semibold text-brand-navy shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-green/40 hover:bg-white hover:shadow-md">
         <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5">
           <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.55h3.24c1.9-1.75 2.98-4.33 2.98-7.42Z" />
           <path fill="#34A853" d="M12 22c2.7 0 4.98-.9 6.63-2.35l-3.24-2.55c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.63A10 10 0 0 0 12 22Z" />
@@ -19,9 +19,9 @@ export function GoogleAuthButton({ label = "Continuar con Google" }: { label?: s
 
 export function AuthDivider() {
   return (
-    <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="my-6 flex items-center gap-3 text-xs font-medium text-slate-400">
       <span className="h-px flex-1 bg-border" />
-      o continúa con correo
+      o continúa con tu correo
       <span className="h-px flex-1 bg-border" />
     </div>
   );

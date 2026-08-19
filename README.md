@@ -49,6 +49,8 @@ Proyecto Supabase Cloud: `tiyikulmmbdehkpqevfk` (`us-east-1`).
 
 La recuperación de contraseña también usa un OTP de 6 dígitos: después de verificarlo se crea una sesión de recuperación y `/restablecer-contrasena` permite guardar la clave nueva.
 
+En `/login`, **Recordarme** conserva las cookies de sesión entre cierres del navegador. Si se desmarca, CartaYa emite cookies de sesión sin `Max-Age` y el middleware mantiene ese mismo modo durante las renovaciones del token.
+
 Google OAuth usa PKCE y vuelve por `/auth/callback`. Si el usuario ya tiene perfil, entra al dashboard; si es nuevo, `/completar-registro` solicita los datos del restaurante y ejecuta la función transaccional `complete_restaurant_owner_onboarding`. Para habilitar el proveedor en otro proyecto, crea un cliente Web en Google Auth Platform, autoriza `https://tiyikulmmbdehkpqevfk.supabase.co/auth/v1/callback` y guarda el Client ID y Client Secret en **Supabase > Authentication > Providers > Google**.
 
 El archivo de marca oficial `logo.png` se importa como imagen estática optimizada en las pantallas de autenticación y el dashboard.
