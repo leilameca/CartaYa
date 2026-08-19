@@ -190,6 +190,8 @@ try {
   }, null, 2));
 } finally {
   if (channel) await authenticated.removeChannel(channel);
+  authenticated.realtime.disconnect();
+  await authenticated.auth.signOut({ scope: "local" });
   if (restaurantId) await admin.from("orders").delete().eq("restaurant_id", restaurantId);
   if (userId) await admin.auth.admin.deleteUser(userId);
   if (restaurantId) {
@@ -199,4 +201,3 @@ try {
     }
   }
 }
-

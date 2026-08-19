@@ -38,7 +38,8 @@ const candidates = await Promise.all(restaurants.map(async (restaurant) => {
 }));
 const restaurant = candidates.sort((a, b) => b.dishCount - a.dishCount)[0];
 const temporaryTestsRemaining = candidates.filter((candidate) =>
-  candidate.name === "CartaYa PWA Integration Test" && candidate.slug.startsWith("pwa-test-"),
+  (candidate.name === "CartaYa PWA Integration Test" && candidate.slug.startsWith("pwa-test-"))
+  || (candidate.name === "CartaYa KDS Integration Test" && candidate.slug.startsWith("kds-test-")),
 ).length;
 if (temporaryTestsRemaining > 0) throw new Error("Quedaron restaurantes temporales de integración sin limpiar");
 
