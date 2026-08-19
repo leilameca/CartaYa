@@ -1,7 +1,8 @@
 import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function PlanPage() {
+export default async function PlanPage({ searchParams }: { searchParams: Promise<{ required?: string }> }) {
+  const { required } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: profile } = await supabase
@@ -14,6 +15,11 @@ export default async function PlanPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      {required === "pro" ? (
+        <div className="mb-6 rounded-2xl border border-brand-orange/25 bg-brand-orange/10 px-5 py-4 text-sm font-semibold text-brand-navy">
+          La Pantalla de Cocina en tiempo real requiere el plan Pro. Mejora tu plan para acceder al KDS.
+        </div>
+      ) : null}
       <p className="text-sm font-semibold uppercase tracking-wider text-brand-green">Suscripción</p>
       <h1 className="mt-2 text-3xl font-bold text-brand-navy">Mi plan</h1>
       <div className="mt-8 max-w-xl rounded-3xl border border-brand-orange/20 bg-white p-8 shadow-sm">

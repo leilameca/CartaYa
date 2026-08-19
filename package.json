@@ -14,7 +14,8 @@
     "verify:foundation": "node scripts/verify-foundation.mjs",
     "verify:menu": "node scripts/verify-menu-manager.mjs",
     "verify:pwa": "node scripts/verify-public-pwa.mjs",
-    "verify:pwa-order": "node scripts/verify-public-order-flow.mjs"
+    "verify:pwa-order": "node scripts/verify-public-order-flow.mjs",
+    "verify:orders-kds": "node scripts/verify-orders-kds.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1113.0",

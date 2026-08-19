@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, LayoutDashboard, UtensilsCrossed } from "lucide-react";
+import { ChefHat, CreditCard, LayoutDashboard, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/dashboard", label: "Inicio", icon: LayoutDashboard },
   { href: "/dashboard/menu", label: "Gestor de menú", icon: UtensilsCrossed },
+  { href: "/dashboard/pedidos", label: "Pedidos", icon: ShoppingBag },
+  { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat },
   { href: "/dashboard/plan", label: "Mi plan", icon: CreditCard },
 ];
 

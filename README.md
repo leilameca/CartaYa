@@ -101,6 +101,16 @@ Para ejecutar la verificación de permisos contra Supabase Cloud:
 npm run verify:pwa
 ```
 
+## Pedidos y Pantalla de Cocina
+
+`/dashboard/pedidos` muestra el historial del tenant con filtros, detalle de partidas y actualización en vivo. `/dashboard/cocina` es el KDS exclusivo del plan Pro: organiza los pedidos activos en Nuevo, En preparación y Listo, permite avanzar su estado y emite una alerta sonora tras activarla en el navegador.
+
+Ambas pantallas se suscriben a `orders` mediante Supabase Realtime con filtro por `restaurant_id`; RLS vuelve a validar cada evento antes de entregarlo. La prueba integrada crea un tenant temporal, mide la llegada Realtime, cambia un estado y comprueba el bloqueo de planes no Pro:
+
+```bash
+npm run verify:orders-kds
+```
+
 > En Next.js 16 el archivo antes llamado `middleware.ts` se llama `proxy.ts`. `src/proxy.ts` cumple la misma función: renueva la sesión y protege `/dashboard/*`.
 
 También puedes verificarlo manualmente creando dos cuentas desde `/registro`. En el SQL Editor, copia los UUID de ambos usuarios y usa el impersonador de JWT del panel/API para consultar `restaurants` y `categories`: cada sesión autenticada debe devolver únicamente su propio restaurante.
