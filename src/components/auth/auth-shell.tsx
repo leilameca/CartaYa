@@ -16,7 +16,7 @@ export function AuthShell({
   return (
     <main className="min-h-[100svh] bg-white">
       <div className="grid min-h-[100svh] w-full lg:grid-cols-[minmax(440px,0.82fr)_minmax(0,1.18fr)]">
-        <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-8 sm:px-10 sm:py-12 lg:px-12 xl:px-20 2xl:px-24">
+        <section className="relative order-2 flex min-h-[68svh] items-center justify-center overflow-hidden px-6 py-8 sm:min-h-[62svh] sm:px-10 sm:py-12 lg:order-none lg:min-h-[100svh] lg:px-12 xl:px-20 2xl:px-24">
           <div className="pointer-events-none absolute -left-28 -top-28 size-72 rounded-full bg-brand-green/[0.06] blur-3xl lg:hidden" />
           <div className="pointer-events-none absolute -bottom-32 -right-24 size-80 rounded-full bg-brand-orange/[0.07] blur-3xl lg:hidden" />
 
@@ -34,14 +34,14 @@ export function AuthShell({
           </div>
         </section>
 
-        <aside className="relative hidden min-h-[100svh] overflow-hidden bg-brand-navy lg:block">
+        <aside className="relative order-1 block h-[32svh] min-h-[220px] overflow-hidden bg-brand-navy sm:h-[38svh] lg:order-none lg:h-auto lg:min-h-[100svh]">
           <Image
             src="/login-restaurant-hero.png"
             alt="Restaurante moderno usando el menú digital CartaYa desde un teléfono"
             fill
             priority
             sizes="(min-width: 1024px) 59vw, 100vw"
-            className="object-cover object-[62%_center]"
+            className="object-cover object-[62%_center] sm:object-[60%_center] lg:object-[62%_center]"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-navy/15 via-transparent to-brand-orange/5" />
         </aside>
