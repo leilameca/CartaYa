@@ -37,6 +37,10 @@ const candidates = await Promise.all(restaurants.map(async (restaurant) => {
   return { ...restaurant, categoryCount: categoryCount ?? 0, dishCount: dishCount ?? 0 };
 }));
 const restaurant = candidates.sort((a, b) => b.dishCount - a.dishCount)[0];
+const temporaryTestsRemaining = candidates.filter((candidate) =>
+  candidate.name === "CartaYa PWA Integration Test" && candidate.slug.startsWith("pwa-test-"),
+).length;
+if (temporaryTestsRemaining > 0) throw new Error("Quedaron restaurantes temporales de integración sin limpiar");
 
 const { data: publicMenu, error: publicMenuError } = await anon.rpc("get_public_menu", {
   p_slug: restaurant.slug,
@@ -72,5 +76,5 @@ console.log(JSON.stringify({
   availableDishesInPublicMenu: publicMenu.categories?.flatMap((category) => category.items ?? []).length ?? 0,
   anonDirectTablesBlocked: true,
   publicOrderRpcBlockedFromAnon: true,
+  temporaryTestsRemaining,
 }, null, 2));
-
