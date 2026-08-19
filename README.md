@@ -85,6 +85,10 @@ Para verificar la fundación completa contra el proyecto Cloud enlazado, sin con
 npm run verify:foundation
 ```
 
+## Gestor de menú
+
+`/dashboard/menu` incluye CRUD de categorías y platos, reordenamiento, disponibilidad, etiquetas y el límite Gratis en interfaz, acciones de servidor y Postgres. Las fotos usan Cloudflare R2; consulta [docs/cloudflare-r2.md](docs/cloudflare-r2.md) para crear el bucket y configurar las cinco variables necesarias.
+
 > En Next.js 16 el archivo antes llamado `middleware.ts` se llama `proxy.ts`. `src/proxy.ts` cumple la misma función: renueva la sesión y protege `/dashboard/*`.
 
 También puedes verificarlo manualmente creando dos cuentas desde `/registro`. En el SQL Editor, copia los UUID de ambos usuarios y usa el impersonador de JWT del panel/API para consultar `restaurants` y `categories`: cada sesión autenticada debe devolver únicamente su propio restaurante.

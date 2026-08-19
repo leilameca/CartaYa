@@ -305,6 +305,10 @@ export type Database = {
         Returns: string
       }
       is_superadmin: { Args: never; Returns: boolean }
+      reorder_categories: {
+        Args: { p_ordered_ids: string[] }
+        Returns: undefined
+      }
     }
     Enums: {
       menu_item_tag: "popular" | "nuevo"
