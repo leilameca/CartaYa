@@ -16,7 +16,7 @@ export function ForgotPasswordForm() {
         <Input id="email" name="email" type="email" autoComplete="email" required />
       </div>
       <FormMessage {...state} />
-      <SubmitButton pendingText="Enviando…">Enviar enlace</SubmitButton>
+      <SubmitButton pendingText="Enviando…">Enviar código</SubmitButton>
     </form>
   );
 }

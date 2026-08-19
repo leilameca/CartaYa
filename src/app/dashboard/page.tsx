@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -17,9 +18,8 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  if (error || !profile) {
-    throw new Error("No se pudo cargar el restaurante asociado a esta cuenta.");
-  }
+  if (!profile && !error) redirect("/completar-registro");
+  if (error || !profile) throw new Error("No se pudo cargar el restaurante asociado a esta cuenta.");
 
   const restaurantRelation = profile.restaurants as unknown as { name: string } | { name: string }[] | null;
   const restaurant = Array.isArray(restaurantRelation) ? restaurantRelation[0] : restaurantRelation;
@@ -28,9 +28,7 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-brand-gray">
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-black tracking-tight text-brand-navy">
-            Carta<span className="text-brand-orange">Ya</span>
-          </span>
+          <BrandLogo className="w-28 sm:w-32" priority />
           <form action={logoutAction}>
             <Button type="submit" variant="outline">Cerrar sesión</Button>
           </form>

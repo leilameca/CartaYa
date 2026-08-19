@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthDivider, GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { RegisterForm } from "@/components/auth/register-form";
 
 export default function RegisterPage() {
@@ -13,6 +14,8 @@ export default function RegisterPage() {
         </>
       }
     >
+      <GoogleAuthButton label="Registrarme con Google" />
+      <AuthDivider />
       <RegisterForm />
     </AuthShell>
   );

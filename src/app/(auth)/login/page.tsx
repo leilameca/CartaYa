@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthDivider, GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { LoginForm } from "@/components/auth/login-form";
+import { FormMessage } from "@/components/auth/form-message";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectTo?: string }>;
+  searchParams: Promise<{ redirectTo?: string; error?: string }>;
 }) {
-  const { redirectTo } = await searchParams;
+  const { redirectTo, error } = await searchParams;
   return (
     <AuthShell
       title="Bienvenida de vuelta"
@@ -18,6 +20,9 @@ export default async function LoginPage({
         </>
       }
     >
+      {error === "google" ? <FormMessage error="No se pudo iniciar con Google. Verifica la configuración del proveedor." /> : null}
+      <GoogleAuthButton label="Entrar con Google" />
+      <AuthDivider />
       <LoginForm redirectTo={redirectTo} />
       <Link className="mt-4 block text-center text-sm text-brand-navy hover:underline" href="/recuperar-contrasena">
         ¿Olvidaste tu contraseña?

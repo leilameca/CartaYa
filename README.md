@@ -23,7 +23,7 @@ Proyecto Supabase Cloud: `tiyikulmmbdehkpqevfk` (`us-east-1`).
 
 2. Copia `.env.example` a `.env.local` y completa las tres claves de Supabase. La `SUPABASE_SERVICE_ROLE_KEY` es exclusivamente de servidor y se reserva para tareas administrativas y el script de verificación; nunca debe llevar el prefijo `NEXT_PUBLIC_`.
 
-3. Aplica `supabase/migrations/202608190001_initial_schema.sql` desde Supabase SQL Editor o con Supabase CLI:
+3. Aplica todas las migraciones con Supabase CLI:
 
    ```bash
    supabase link --project-ref TU_PROJECT_REF
@@ -45,7 +45,13 @@ Proyecto Supabase Cloud: `tiyikulmmbdehkpqevfk` (`us-east-1`).
 
 ## Flujo de registro
 
-`/registro` usa `auth.signUp` desde una Server Action y los límites nativos de Supabase Auth. La metadata activa el trigger `handle_new_restaurant_owner`, que crea el restaurante Gratis y el perfil `owner` dentro de la misma transacción que inserta `auth.users`. Si el slug ya existe o cualquier inserción falla, Supabase revierte también el usuario. Como la confirmación de correo está desactivada para esta etapa, Supabase entrega la sesión automáticamente y la aplicación redirige a `/dashboard`.
+`/registro` usa `auth.signUp` y envía un OTP de 6 dígitos con la plantilla de CartaYa. El restaurante Gratis y el perfil `owner` se crean en una sola transacción únicamente cuando Supabase confirma el correo. El código vence en 60 minutos y se puede reenviar con el límite nativo de Auth.
+
+La recuperación de contraseña también usa un OTP de 6 dígitos: después de verificarlo se crea una sesión de recuperación y `/restablecer-contrasena` permite guardar la clave nueva.
+
+Google OAuth usa PKCE y vuelve por `/auth/callback`. Si el usuario ya tiene perfil, entra al dashboard; si es nuevo, `/completar-registro` solicita los datos del restaurante y ejecuta la función transaccional `complete_restaurant_owner_onboarding`. Para habilitar el proveedor en otro proyecto, crea un cliente Web en Google Auth Platform, autoriza `https://tiyikulmmbdehkpqevfk.supabase.co/auth/v1/callback` y guarda el Client ID y Client Secret en **Supabase > Authentication > Providers > Google**.
+
+El archivo de marca oficial `logo.png` se importa como imagen estática optimizada en las pantallas de autenticación y el dashboard.
 
 ## Seguridad multi-tenant
 

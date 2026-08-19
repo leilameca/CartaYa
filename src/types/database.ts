@@ -296,6 +296,14 @@ export type Database = {
         Args: { target_restaurant_id: string }
         Returns: boolean
       }
+      complete_restaurant_owner_onboarding: {
+        Args: {
+          p_phone: string
+          p_restaurant_name: string
+          p_restaurant_slug: string
+        }
+        Returns: string
+      }
       is_superadmin: { Args: never; Returns: boolean }
     }
     Enums: {

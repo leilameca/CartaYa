@@ -60,8 +60,14 @@ async function createOwner(fixture) {
     },
   });
   if (error) throw error;
-  assert(data.session, "El registro público no inició sesión automáticamente");
+  assert(data.user, "El registro público no creó el usuario pendiente");
+  assert(!data.session, "El registro público debe exigir el código de correo antes de iniciar sesión");
   createdUsers.push(data.user.id);
+
+  const { error: confirmationError } = await admin.auth.admin.updateUserById(data.user.id, {
+    email_confirm: true,
+  });
+  if (confirmationError) throw confirmationError;
 
   const { data: profile, error: profileError } = await admin
     .from("profiles")
@@ -87,11 +93,11 @@ async function signIn(email) {
 try {
   const ownerA = await createOwner(fixtures[0]);
   const ownerB = await createOwner(fixtures[1]);
-  console.log("✓ Registro transaccional crea auth user + restaurante + owner");
+  console.log("✓ El registro exige verificación y la confirmación crea restaurante + owner");
 
   const clientA = await signIn(fixtures[0].email);
   const clientB = await signIn(fixtures[1].email);
-  console.log("✓ Ambos owners pueden iniciar sesión automáticamente con contraseña");
+  console.log("✓ Ambos owners confirmados pueden iniciar sesión con contraseña");
 
   const { data: restaurantsA, error: restaurantsAError } = await clientA.from("restaurants").select("id, name");
   const { data: restaurantsB, error: restaurantsBError } = await clientB.from("restaurants").select("id, name");
