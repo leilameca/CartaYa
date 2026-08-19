@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify:foundation": "node scripts/verify-foundation.mjs",
-    "verify:menu": "node scripts/verify-menu-manager.mjs"
+    "verify:menu": "node scripts/verify-menu-manager.mjs",
+    "verify:pwa": "node scripts/verify-public-pwa.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1113.0",

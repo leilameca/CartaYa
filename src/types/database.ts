@@ -304,6 +304,19 @@ export type Database = {
         }
         Returns: string
       }
+      create_public_order: {
+        Args: {
+          p_items: Json
+          p_notes?: string | null
+          p_slug: string
+          p_table_id: string | null
+        }
+        Returns: Json
+      }
+      get_public_menu: {
+        Args: { p_slug: string; p_table_id?: string | null }
+        Returns: Json
+      }
       is_superadmin: { Args: never; Returns: boolean }
       reorder_categories: {
         Args: { p_ordered_ids: string[] }

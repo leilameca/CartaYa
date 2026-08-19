@@ -57,7 +57,7 @@ El archivo de marca oficial `logo.png` se importa como imagen estática optimiza
 
 ## Seguridad multi-tenant
 
-RLS está habilitado en las siete tablas. `anon` no tiene permisos sobre ellas. `owner` y `staff` solo pueden acceder al tenant guardado en su propio perfil; `superadmin` puede leer todos los tenants, pero no obtiene escritura por las políticas públicas. La `service_role` sí omite RLS por diseño de Supabase y por eso solo se usa en tareas administrativas controladas, nunca en el flujo público de registro.
+RLS está habilitado en las siete tablas. `anon` no tiene permisos sobre ellas. `owner` y `staff` solo pueden acceder al tenant guardado en su propio perfil; `superadmin` puede leer todos los tenants, pero no obtiene escritura por las políticas públicas. La `service_role` sí omite RLS por diseño de Supabase y por eso solo se usa en tareas administrativas controladas y en el endpoint de servidor que valida pedidos públicos; nunca llega al navegador.
 
 Los propietarios tampoco pueden modificar `subscription_tier`, `role` ni `restaurant_id` vía API. Para promover tu cuenta desde SQL Editor:
 
@@ -88,6 +88,18 @@ npm run verify:foundation
 ## Gestor de menú
 
 `/dashboard/menu` incluye CRUD de categorías y platos, reordenamiento, disponibilidad, etiquetas y el límite Gratis en interfaz, acciones de servidor y Postgres. Las fotos usan Cloudflare R2; consulta [docs/cloudflare-r2.md](docs/cloudflare-r2.md) para crear el bucket y configurar las cinco variables necesarias.
+
+## Menú público y PWA
+
+Cada restaurante se publica en `/r/[slug]`; los QR de mesa usan `/r/[slug]/mesa/[tableId]`. La PWA aplica color y logo por tenant, muestra únicamente platos disponibles, conserva el último menú visitado para conexiones intermitentes y expone un manifest instalable con el nombre del restaurante.
+
+Las tablas continúan completamente cerradas para `anon`. `get_public_menu` es la única lectura pública y limita el resultado al slug solicitado. Los pedidos Plus/Pro entran por `/api/public/orders`; el servidor valida horario, mesa, plan, disponibilidad y cantidades, y PostgreSQL recalcula precios e inserta `orders` + `order_items` atómicamente. El plan Gratis nunca crea registros.
+
+Para ejecutar la verificación de permisos contra Supabase Cloud:
+
+```bash
+npm run verify:pwa
+```
 
 > En Next.js 16 el archivo antes llamado `middleware.ts` se llama `proxy.ts`. `src/proxy.ts` cumple la misma función: renueva la sesión y protege `/dashboard/*`.
 
