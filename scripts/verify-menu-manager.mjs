@@ -59,13 +59,10 @@ try {
 
   const { data: categories, error: categoryError } = await publicClient
     .from("categories")
-    .insert([
-      { restaurant_id: restaurantId, name: "Entradas", display_order: 0 },
-      { restaurant_id: restaurantId, name: "Platos fuertes", display_order: 1 },
-    ])
-    .select("id, name");
+    .select("id, name")
+    .order("display_order");
   if (categoryError) throw categoryError;
-  assert(categories.length === 2, "No se crearon las categorías");
+  assert(categories.length === 4, "No se crearon las cuatro categorías predeterminadas");
 
   const entradas = categories.find((category) => category.name === "Entradas");
   const fuertes = categories.find((category) => category.name === "Platos fuertes");
@@ -73,11 +70,12 @@ try {
 
   const { error: renameError } = await publicClient.from("categories").update({ name: "Aperitivos" }).eq("id", entradas.id);
   if (renameError) throw renameError;
-  const { error: reorderError } = await publicClient.rpc("reorder_categories", { p_ordered_ids: [fuertes.id, entradas.id] });
+  const orderedIds = [fuertes.id, ...categories.filter((category) => category.id !== fuertes.id).map((category) => category.id)];
+  const { error: reorderError } = await publicClient.rpc("reorder_categories", { p_ordered_ids: orderedIds });
   if (reorderError) throw reorderError;
   const { data: reordered } = await publicClient.from("categories").select("id").order("display_order");
   assert(reordered?.[0]?.id === fuertes.id, "No se guardó el nuevo orden de categorías");
-  console.log("✓ Categorías: crear, renombrar y reordenar");
+  console.log("✓ Categorías predeterminadas: crear automáticamente, renombrar y reordenar");
 
   const { data: testDish, error: dishError } = await publicClient
     .from("menu_items")

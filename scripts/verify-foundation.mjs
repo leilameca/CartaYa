@@ -77,6 +77,16 @@ async function createOwner(fixture) {
   if (profileError) throw profileError;
   assert(profile.role === "owner", "El trigger no creó el perfil owner");
   assert(profile.restaurants?.slug === fixture.slug, "El trigger no creó el restaurante correcto");
+  const { data: defaultCategories, error: categoriesError } = await admin
+    .from("categories")
+    .select("name, display_order")
+    .eq("restaurant_id", profile.restaurant_id)
+    .order("display_order");
+  if (categoriesError) throw categoriesError;
+  assert(
+    defaultCategories.map((category) => category.name).join("|") === "Entradas|Platos fuertes|Bebidas|Postres",
+    "El restaurante nuevo no recibió las categorías predeterminadas",
+  );
   createdRestaurants.push(profile.restaurant_id);
   return { userId: data.user.id, restaurantId: profile.restaurant_id };
 }
@@ -93,7 +103,7 @@ async function signIn(email) {
 try {
   const ownerA = await createOwner(fixtures[0]);
   const ownerB = await createOwner(fixtures[1]);
-  console.log("✓ El registro exige verificación y la confirmación crea restaurante + owner");
+  console.log("✓ La confirmación crea restaurante, owner y cuatro categorías predeterminadas");
 
   const clientA = await signIn(fixtures[0].email);
   const clientB = await signIn(fixtures[1].email);
