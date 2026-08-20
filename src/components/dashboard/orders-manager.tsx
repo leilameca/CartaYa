@@ -39,6 +39,7 @@ function OrderDetail({ order }: { order: DashboardOrder }) {
             <div className="flex justify-between gap-4"><dt className="text-slate-500">Código</dt><dd className="font-bold">#{shortOrderId(order.id)}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-slate-500">Fecha</dt><dd className="text-right font-bold">{orderDate(order.createdAt)}, {orderTime(order.createdAt)}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-slate-500">Mesa</dt><dd className="font-bold">{order.tableLabel ?? "Pedido general"}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-slate-500">A nombre de</dt><dd className="text-right font-bold">{order.customerName ?? "Sin nombre"}</dd></div>
           </dl>
           {order.notes ? <div className="mt-4 border-t pt-4"><p className="text-xs font-bold uppercase text-slate-400">Notas generales</p><p className="mt-1 text-sm text-slate-700">{order.notes}</p></div> : null}
         </div>
@@ -114,7 +115,7 @@ export function OrdersManager({
               <button onClick={() => setExpanded(isExpanded ? null : order.id)} className="grid w-full gap-4 px-4 py-4 text-left sm:grid-cols-[1.2fr_0.8fr_1fr_auto] sm:items-center sm:px-6">
                 <div className="flex items-center gap-3">
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-orange/10 text-brand-orange"><Utensils className="size-5" /></span>
-                  <div><p className="font-extrabold">{order.tableLabel ? `Mesa ${order.tableLabel}` : "Pedido general"}</p><p className="mt-0.5 text-xs text-slate-400">#{shortOrderId(order.id)}</p></div>
+                  <div><p className="font-extrabold">{order.tableLabel ? `Mesa ${order.tableLabel}` : "Pedido general"}</p><p className="mt-0.5 text-xs text-slate-400">{order.customerName ?? "Sin nombre"} · #{shortOrderId(order.id)}</p></div>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600"><Clock3 className="size-4" />{orderTime(order.createdAt)} <span className="text-slate-300">·</span> {orderDate(order.createdAt)}</div>
                 <div className="flex items-center gap-3"><span className={cn("rounded-full px-3 py-1 text-xs font-extrabold", statusMeta.className)}>{statusMeta.label}</span><span className="text-sm text-slate-500">{order.items.reduce((sum, item) => sum + item.quantity, 0)} platos</span></div>

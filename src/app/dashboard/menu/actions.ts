@@ -47,7 +47,7 @@ async function getRestaurantContext() {
     .eq("id", user.id)
     .single();
 
-  if (error || !profile || !["owner", "staff"].includes(profile.role)) {
+  if (error || !profile || profile.role !== "owner") {
     return { error: "No tienes permisos para administrar este menú." } as const;
   }
 

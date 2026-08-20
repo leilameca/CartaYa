@@ -21,7 +21,7 @@ async function getTableContext() {
     .select("restaurant_id, role, restaurants(slug, subscription_tier)")
     .eq("id", user.id)
     .single();
-  if (!profile || !["owner", "staff"].includes(profile.role)) {
+  if (!profile || profile.role !== "owner") {
     return { error: "No tienes permisos para administrar mesas." } as const;
   }
 

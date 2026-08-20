@@ -5,22 +5,25 @@ import { usePathname } from "next/navigation";
 import { ChefHat, CreditCard, Crown, LayoutDashboard, LockKeyhole, QrCode, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { hasTier, type SubscriptionTier } from "@/lib/subscriptions";
 import { cn } from "@/lib/utils";
+import type { Database } from "@/types/database";
 
 const links = [
-  { href: "/dashboard", label: "Inicio", icon: LayoutDashboard },
-  { href: "/dashboard/menu", label: "Gestor de menú", icon: UtensilsCrossed },
-  { href: "/dashboard/pedidos", label: "Pedidos", icon: ShoppingBag, required: "plus" as const },
-  { href: "/dashboard/qr", label: "Códigos QR", icon: QrCode },
-  { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat, required: "pro" as const },
-  { href: "/dashboard/plan", label: "Mi plan", icon: CreditCard },
+  { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, roles: ["owner", "mesero", "cocina"] },
+  { href: "/dashboard/menu", label: "Gestor de menú", icon: UtensilsCrossed, roles: ["owner"] },
+  { href: "/dashboard/pedidos", label: "Pedidos", icon: ShoppingBag, required: "plus" as const, roles: ["owner", "mesero"] },
+  { href: "/dashboard/qr", label: "Códigos QR", icon: QrCode, roles: ["owner"] },
+  { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat, required: "pro" as const, roles: ["owner", "cocina"] },
+  { href: "/dashboard/plan", label: "Mi plan", icon: CreditCard, roles: ["owner"] },
 ];
 
-export function DashboardNav({ mobile = false, tier }: { mobile?: boolean; tier: SubscriptionTier }) {
+type ProfileRole = Database["public"]["Enums"]["profile_role"];
+
+export function DashboardNav({ mobile = false, role, tier }: { mobile?: boolean; role: ProfileRole; tier: SubscriptionTier }) {
   const pathname = usePathname();
 
   return (
     <nav className={cn(mobile ? "flex gap-1 overflow-x-auto px-4 pb-3" : "space-y-1 px-3")} aria-label="Navegación del panel">
-      {links.map((link) => {
+      {links.filter((link) => link.roles.includes(role)).map((link) => {
         const active = link.href === "/dashboard" ? pathname === link.href : pathname.startsWith(link.href);
         const Icon = link.icon;
         const required = "required" in link ? link.required : undefined;

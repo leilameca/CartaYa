@@ -10,10 +10,11 @@ export default async function QrPage() {
   if (!user) redirect("/login");
   const { data: profile } = await supabase
     .from("profiles")
-    .select("restaurant_id, restaurants(name, slug, subscription_tier)")
+    .select("restaurant_id, role, restaurants(name, slug, subscription_tier)")
     .eq("id", user.id)
     .single();
   if (!profile) redirect("/completar-registro");
+  if (profile.role !== "owner") redirect("/dashboard");
 
   const relation = profile.restaurants as unknown as
     | { name: string; slug: string; subscription_tier: SubscriptionTier }

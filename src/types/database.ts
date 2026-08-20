@@ -141,6 +141,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          created_by_waiter_id: string | null
+          customer_name: string | null
           created_at: string
           id: string
           notes: string | null
@@ -150,6 +152,8 @@ export type Database = {
           total: number
         }
         Insert: {
+          created_by_waiter_id?: string | null
+          customer_name?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -159,6 +163,8 @@ export type Database = {
           total?: number
         }
         Update: {
+          created_by_waiter_id?: string | null
+          customer_name?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -180,6 +186,13 @@ export type Database = {
             columns: ["table_id", "restaurant_id"]
             isOneToOne: false
             referencedRelation: "tables"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+          {
+            foreignKeyName: "orders_created_by_waiter_tenant_fk"
+            columns: ["created_by_waiter_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id", "restaurant_id"]
           },
         ]
@@ -325,6 +338,16 @@ export type Database = {
         }
         Returns: Json
       }
+      create_public_order_with_customer: {
+        Args: {
+          p_customer_name?: string | null
+          p_items: Json
+          p_notes?: string | null
+          p_slug: string
+          p_table_id: string | null
+        }
+        Returns: Json
+      }
       get_public_menu: {
         Args: { p_slug: string; p_table_id?: string | null }
         Returns: Json
@@ -338,7 +361,7 @@ export type Database = {
     Enums: {
       menu_item_tag: "popular" | "nuevo"
       order_status: "nuevo" | "en_preparacion" | "listo" | "entregado"
-      profile_role: "owner" | "staff" | "superadmin"
+      profile_role: "owner" | "staff" | "mesero" | "cocina" | "superadmin"
       subscription_tier: "gratis" | "plus" | "pro"
     }
     CompositeTypes: {
@@ -469,7 +492,7 @@ export const Constants = {
     Enums: {
       menu_item_tag: ["popular", "nuevo"],
       order_status: ["nuevo", "en_preparacion", "listo", "entregado"],
-      profile_role: ["owner", "staff", "superadmin"],
+      profile_role: ["owner", "staff", "mesero", "cocina", "superadmin"],
       subscription_tier: ["gratis", "plus", "pro"],
     },
   },

@@ -7,6 +7,7 @@ import type { PublicMenuData, PublicOrderResult } from "@/types/public-menu";
 const orderSchema = z.object({
   slug: z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   tableId: z.uuid().nullable(),
+  customerName: z.string().trim().min(2).max(100).optional().default(""),
   notes: z.string().trim().max(500).optional().default(""),
   items: z.array(z.object({
     menu_item_id: z.uuid(),
@@ -51,11 +52,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "El restaurante todavía no ha configurado su número de WhatsApp." }, { status: 409 });
   }
 
-  const { data, error } = await admin.rpc("create_public_order", {
+  const { data, error } = await admin.rpc("create_public_order_with_customer", {
     p_slug: parsed.data.slug,
     p_table_id: parsed.data.tableId,
     p_items: parsed.data.items,
     p_notes: parsed.data.notes || null,
+    p_customer_name: parsed.data.customerName || null,
   });
 
   if (error || !data) {

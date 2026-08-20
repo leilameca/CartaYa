@@ -9,6 +9,8 @@ export const ORDER_SELECT = `
   status,
   total,
   notes,
+  customer_name,
+  created_by_waiter_id,
   created_at,
   table:tables(label),
   items:order_items(
@@ -28,6 +30,8 @@ type RawOrder = {
   status: OrderStatus;
   total: number;
   notes: string | null;
+  customer_name: string | null;
+  created_by_waiter_id: string | null;
   created_at: string;
   table: { label: string } | { label: string }[] | null;
   items: Array<{
@@ -53,6 +57,8 @@ export function normalizeOrder(raw: RawOrder): DashboardOrder {
     status: raw.status,
     total: Number(raw.total),
     notes: raw.notes,
+    customerName: raw.customer_name,
+    createdByWaiterId: raw.created_by_waiter_id,
     createdAt: raw.created_at,
     items: (raw.items ?? []).map((item) => ({
       id: item.id,

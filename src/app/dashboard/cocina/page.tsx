@@ -10,10 +10,11 @@ export default async function KitchenPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("restaurant_id, restaurants(name, subscription_tier)")
+    .select("restaurant_id, role, restaurants(name, subscription_tier)")
     .eq("id", user.id)
     .single();
   if (!profile) redirect("/completar-registro");
+  if (!["owner", "cocina"].includes(profile.role)) redirect("/dashboard");
 
   const relation = profile.restaurants as unknown as
     | { name: string; subscription_tier: "gratis" | "plus" | "pro" }

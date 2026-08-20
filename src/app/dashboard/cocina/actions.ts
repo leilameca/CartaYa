@@ -33,7 +33,7 @@ export async function advanceKitchenOrderAction(orderId: string, nextStatus: Ord
     | { subscription_tier: "gratis" | "plus" | "pro" }[]
     | null;
   const restaurant = Array.isArray(relation) ? relation[0] : relation;
-  if (!profile || !["owner", "staff"].includes(profile.role) || restaurant?.subscription_tier !== "pro") {
+  if (!profile || !["owner", "cocina"].includes(profile.role) || restaurant?.subscription_tier !== "pro") {
     return { error: "La Pantalla de Cocina y los cambios de estado requieren el plan Pro." };
   }
 

@@ -10,10 +10,11 @@ export default async function MenuPage() {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("restaurant_id, restaurants(name, subscription_tier)")
+    .select("restaurant_id, role, restaurants(name, subscription_tier)")
     .eq("id", user.id)
     .single();
   if (profileError || !profile) throw new Error("No se pudo cargar el restaurante de esta cuenta.");
+  if (profile.role !== "owner") redirect("/dashboard");
 
   const relation = profile.restaurants as unknown as
     | { name: string; subscription_tier: "gratis" | "plus" | "pro" }

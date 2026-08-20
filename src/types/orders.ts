@@ -19,6 +19,8 @@ export type DashboardOrder = {
   status: OrderStatus;
   total: number;
   notes: string | null;
+  customerName: string | null;
+  createdByWaiterId: string | null;
   createdAt: string;
   items: DashboardOrderItem[];
 };

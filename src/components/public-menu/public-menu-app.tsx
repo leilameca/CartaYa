@@ -47,31 +47,53 @@ function quantityButtonLabel(item: PublicMenuItem, direction: "add" | "remove") 
 
 export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) {
   const cacheKey = `cartaya:menu:${initialMenu.restaurant.slug}:${initialMenu.table?.id ?? "general"}`;
-  const menu = initialMenu;
+  const [menu, setMenu] = useState<PublicMenuData>(() => {
+    if (typeof window === "undefined" || window.navigator.onLine) return initialMenu;
+    try {
+      const rawCached = window.localStorage.getItem(cacheKey);
+      const parsed = rawCached ? JSON.parse(rawCached) as { menu?: PublicMenuData } : null;
+      return parsed?.menu ?? initialMenu;
+    } catch {
+      return initialMenu;
+    }
+  });
   const [cart, setCart] = useState<Cart>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [online, setOnline] = useState(true);
+  const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
   const [now, setNow] = useState(() => new Date());
   const [notes, setNotes] = useState("");
+  const [customerName, setCustomerName] = useState("");
   const [orderState, setOrderState] = useState<OrderState>({});
 
   useEffect(() => {
-    const updateConnection = () => setOnline(navigator.onLine);
-    updateConnection();
-    window.addEventListener("online", updateConnection);
-    window.addEventListener("offline", updateConnection);
+    const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
     try {
-      if (navigator.onLine) {
+      if (isOnline) {
         localStorage.setItem(cacheKey, JSON.stringify({ menu: initialMenu, cachedAt: new Date().toISOString() }));
       }
     } catch {
       // Private browsing or storage limits must not block menu usage.
     }
 
+    const handleOnline = () => {
+      setOnline(true);
+      setMenu(initialMenu);
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ menu: initialMenu, cachedAt: new Date().toISOString() }));
+      } catch {}
+    };
+
+    const handleOffline = () => {
+      setOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
     return () => {
-      window.removeEventListener("online", updateConnection);
-      window.removeEventListener("offline", updateConnection);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, [cacheKey, initialMenu]);
 
@@ -124,6 +146,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
         body: JSON.stringify({
           slug: menu.restaurant.slug,
           tableId: menu.table?.id ?? null,
+          customerName,
           notes,
           items: cartItems.map(({ item, quantity }) => ({ menu_item_id: item.id, quantity, notes: "" })),
         }),
@@ -323,6 +346,9 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
 
               <label className="mt-6 block text-sm font-bold" htmlFor="order-notes">Notas para el restaurante</label>
               <textarea id="order-notes" value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={500} rows={2} placeholder="Ej.: sin cebolla, alergias…" className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-transparent focus:ring-2" style={{ "--tw-ring-color": primaryColor } as React.CSSProperties} />
+
+              <label className="mt-5 block text-sm font-bold" htmlFor="customer-name">¿A nombre de quién va este pedido?</label>
+              <input id="customer-name" value={customerName} onChange={(event) => setCustomerName(event.target.value)} maxLength={100} placeholder="Ej.: Ana" className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-transparent focus:ring-2" style={{ "--tw-ring-color": primaryColor } as React.CSSProperties} />
 
               <div className="mt-6 rounded-2xl bg-slate-50 p-4">
                 <div className="flex justify-between text-sm text-slate-500"><span>Artículos</span><span>{itemCount}</span></div>

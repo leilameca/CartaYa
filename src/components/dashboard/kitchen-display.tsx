@@ -52,7 +52,7 @@ function KitchenCard({
       <div className="flex items-start justify-between gap-3 border-b bg-slate-50 px-4 py-4">
         <div>
           <p className="text-2xl font-black tracking-tight text-brand-navy">{order.tableLabel ? `Mesa ${order.tableLabel}` : "Pedido general"}</p>
-          <p className="mt-1 text-xs font-bold text-slate-400">#{shortOrderId(order.id)} · {orderTime(order.createdAt)}</p>
+          <p className="mt-1 text-xs font-bold text-slate-400">{order.customerName ?? "Sin nombre"} · #{shortOrderId(order.id)} · {orderTime(order.createdAt)}</p>
         </div>
         <span className={cn("flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-black", timerClass(minutes, threshold))}>
           <Clock3 className="size-4" />{minutes} min
