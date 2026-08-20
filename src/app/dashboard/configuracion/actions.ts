@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { deleteRestaurantLogo, uploadRestaurantLogo } from "@/lib/cloudflare/r2";
 import { createClient } from "@/lib/supabase/server";
 
 const settingsSchema = z.object({
@@ -10,7 +11,6 @@ const settingsSchema = z.object({
   slug: z.string().trim().min(2).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   phone: z.string().trim().max(40),
   address: z.string().trim().max(240),
-  logoUrl: z.string().trim().url().or(z.literal("")),
   primaryColor: z.string().trim().regex(/^#[0-9a-f]{6}$/i),
 });
 
@@ -18,8 +18,11 @@ async function getOwnerContext() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Tu sesión venció. Inicia sesión nuevamente." } as const;
-  const { data: profile } = await supabase.from("profiles").select("restaurant_id, role").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("restaurant_id, role, restaurants(subscription_tier)").eq("id", user.id).single();
   if (!profile || profile.role !== "owner") return { error: "Solo el dueño puede editar la configuración." } as const;
+  const relation = profile.restaurants as unknown as { subscription_tier: "gratis" | "plus" | "pro" } | { subscription_tier: "gratis" | "plus" | "pro" }[] | null;
+  const restaurant = Array.isArray(relation) ? relation[0] : relation;
+  if (restaurant?.subscription_tier !== "pro") return { error: "La personalización requiere el plan Pro." } as const;
   return { supabase, restaurantId: profile.restaurant_id } as const;
 }
 
@@ -29,25 +32,40 @@ export async function updateRestaurantSettingsAction(formData: FormData) {
     slug: formData.get("slug"),
     phone: formData.get("phone"),
     address: formData.get("address"),
-    logoUrl: formData.get("logoUrl"),
     primaryColor: formData.get("primaryColor"),
   });
   if (!parsed.success) redirect("/dashboard/configuracion?error=formulario");
 
   const context = await getOwnerContext();
   if ("error" in context) redirect("/dashboard/configuracion?error=permisos");
+  const logo = formData.get("logo");
+  let logoUrl: string | null = null;
+  if (logo instanceof File && logo.size > 0) {
+    try {
+      logoUrl = (await uploadRestaurantLogo(logo, context.restaurantId)).url;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message === "R2_NOT_CONFIGURED") redirect("/dashboard/configuracion?error=r2");
+      if (message === "IMAGE_TYPE_INVALID") redirect("/dashboard/configuracion?error=tipo-logo");
+      if (message === "IMAGE_SIZE_INVALID") redirect("/dashboard/configuracion?error=tamano-logo");
+      redirect("/dashboard/configuracion?error=logo");
+    }
+  }
+  const { data: current } = await context.supabase.from("restaurants").select("logo_url").eq("id", context.restaurantId).single();
   const { error } = await context.supabase.from("restaurants").update({
     name: parsed.data.name,
     slug: parsed.data.slug,
     phone: parsed.data.phone || null,
     address: parsed.data.address || null,
-    logo_url: parsed.data.logoUrl || null,
+    logo_url: logoUrl ?? current?.logo_url ?? null,
     primary_color: parsed.data.primaryColor,
   }).eq("id", context.restaurantId);
   if (error) {
+    if (logoUrl) await deleteRestaurantLogo(logoUrl, context.restaurantId).catch(console.error);
     if (error.code === "23505") redirect("/dashboard/configuracion?error=slug");
     redirect("/dashboard/configuracion?error=guardar");
   }
+  if (logoUrl && current?.logo_url && current.logo_url !== logoUrl) await deleteRestaurantLogo(current.logo_url, context.restaurantId).catch(console.error);
   revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard/configuracion");
   revalidatePath("/r", "layout");

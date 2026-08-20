@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/actions";
 import { BrandLogo } from "@/components/brand-logo";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
+import { PushNotifications } from "@/components/dashboard/push-notifications";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,6 +28,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
         </div>
         <DashboardNav role={profile.role} tier={restaurant?.subscription_tier ?? "gratis"} />
         <form action={logoutAction} className="mt-auto border-t p-4">
+          <PushNotifications />
           <Button type="submit" variant="ghost" className="w-full justify-start gap-3 text-slate-600"><LogOut className="h-4 w-4" />Cerrar sesión</Button>
         </form>
       </aside>
@@ -37,6 +39,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
             <form action={logoutAction}><Button type="submit" variant="ghost" size="icon" aria-label="Cerrar sesión"><LogOut className="h-5 w-5" /></Button></form>
           </div>
           <DashboardNav mobile role={profile.role} tier={restaurant?.subscription_tier ?? "gratis"} />
+          <div className="border-t px-4 py-2"><PushNotifications /></div>
         </header>
         {children}
       </div>

@@ -86,6 +86,14 @@ export function isR2Configured() {
 }
 
 export async function uploadMenuImage(file: File, restaurantId: string) {
+  return uploadRestaurantImage(file, restaurantId, "menu");
+}
+
+export async function uploadRestaurantLogo(file: File, restaurantId: string) {
+  return uploadRestaurantImage(file, restaurantId, "branding");
+}
+
+async function uploadRestaurantImage(file: File, restaurantId: string, folder: "menu" | "branding") {
   const config = readR2Config();
   if (!config) throw new Error("R2_NOT_CONFIGURED");
 
@@ -93,7 +101,7 @@ export async function uploadMenuImage(file: File, restaurantId: string) {
   if (!extension) throw new Error("IMAGE_TYPE_INVALID");
   if (file.size <= 0 || file.size > MAX_MENU_IMAGE_BYTES) throw new Error("IMAGE_SIZE_INVALID");
 
-  const key = `restaurants/${restaurantId}/menu/${randomUUID()}.${extension}`;
+  const key = `restaurants/${restaurantId}/${folder}/${randomUUID()}.${extension}`;
   const body = new Uint8Array(await file.arrayBuffer());
   if (!hasValidImageSignature(body, file.type)) throw new Error("IMAGE_TYPE_INVALID");
 
@@ -110,6 +118,19 @@ export async function uploadMenuImage(file: File, restaurantId: string) {
   );
 
   return { key, url: `${config.publicBaseUrl}/${key}` };
+}
+
+export async function deleteRestaurantLogo(url: string | null, restaurantId: string) {
+  const config = readR2Config();
+  if (!config || !url) return;
+
+  const prefix = `${config.publicBaseUrl}/`;
+  if (!url.startsWith(prefix)) return;
+
+  const key = decodeURIComponent(url.slice(prefix.length));
+  if (!key.startsWith(`restaurants/${restaurantId}/branding/`) || key.includes("..")) return;
+
+  await getR2Client(config).send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
 }
 
 export async function deleteMenuImageByUrl(url: string | null, restaurantId: string) {

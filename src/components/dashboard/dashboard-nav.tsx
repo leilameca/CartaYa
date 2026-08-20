@@ -14,8 +14,8 @@ const links = [
   { href: "/dashboard/qr", label: "Códigos QR", icon: QrCode, roles: ["owner"] },
   { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat, required: "pro" as const, roles: ["owner", "cocina"] },
   { href: "/dashboard/plan", label: "Mi plan", icon: CreditCard, roles: ["owner"] },
-  { href: "/dashboard/equipo", label: "Mi equipo", icon: Users, roles: ["owner"] },
-  { href: "/dashboard/configuracion", label: "Personalización", icon: Palette, roles: ["owner"] },
+  { href: "/dashboard/equipo", label: "Mi equipo", icon: Users, roles: ["owner"], required: "pro" as const },
+  { href: "/dashboard/configuracion", label: "Personalización", icon: Palette, roles: ["owner"], required: "pro" as const },
 ];
 
 type ProfileRole = Database["public"]["Enums"]["profile_role"];

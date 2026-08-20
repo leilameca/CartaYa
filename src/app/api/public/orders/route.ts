@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { isRestaurantOpen } from "@/lib/opening-hours";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendRestaurantPush } from "@/lib/push/server";
 import type { PublicMenuData, PublicOrderResult } from "@/types/public-menu";
 
 const orderSchema = z.object({
@@ -66,6 +67,15 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+
+  await sendRestaurantPush({
+    restaurantId: menu.restaurant.id,
+    audience: ["cocina", "owner"],
+    title: "Nuevo pedido recibido",
+    body: `${parsed.data.customerName || "Cliente"} realizó un pedido${menu.table?.label ? ` en mesa ${menu.table.label}` : ""}.`,
+    url: "/dashboard/cocina",
+    tag: `new-order-${(data as PublicOrderResult).order_id}`,
+  });
 
   return NextResponse.json(data as PublicOrderResult, {
     status: 201,

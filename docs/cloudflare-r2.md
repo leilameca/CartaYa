@@ -1,6 +1,6 @@
 # Configurar Cloudflare R2 para las fotos de CartaYa
 
-CartaYa usa un bucket **R2 Standard**. El almacenamiento administrado de Cloudflare Images requiere un plan de pago, mientras R2 incluye una cuota mensual gratuita adecuada para esta etapa. Las fotos se guardan bajo `restaurants/{restaurant_id}/menu/` y nunca se exponen las credenciales al navegador.
+CartaYa usa un bucket **R2 Standard**. El almacenamiento administrado de Cloudflare Images requiere un plan de pago, mientras R2 incluye una cuota mensual gratuita adecuada para esta etapa. Las fotos de platos se guardan bajo `restaurants/{restaurant_id}/menu/` y los logos bajo `restaurants/{restaurant_id}/branding/`. Nunca se exponen las credenciales al navegador.
 
 ## 1. Crear el bucket
 
@@ -50,6 +50,20 @@ Después de guardar las variables en Vercel, crea un nuevo despliegue. La advert
 Prueba final:
 
 1. Crea una categoría.
-2. Agrega un plato con una foto JPG, PNG, WebP o AVIF de hasta 3 MB.
+2. Agrega un plato con una foto JPG, PNG, WebP o AVIF de hasta 3 MB seleccionándola desde la computadora o el celular.
 3. Abre `menu_items` en Supabase y comprueba que `image_url` contiene el dominio público de R2.
 4. Abre esa URL en una ventana privada.
+
+Para probar el logo, entra a `/dashboard/configuracion`, selecciona una imagen en **Logo del restaurante**, guarda y confirma que la URL pública resultante usa el dominio configurado para R2.
+
+## Web Push y VAPID
+
+Las notificaciones push no usan R2. CartaYa usa `web-push` con un par de llaves VAPID:
+
+```dotenv
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:admin@tu-dominio.com
+```
+
+Genera el par una sola vez con `npx web-push generate-vapid-keys`. La clave pública se configura en Vercel como variable pública; la privada y `VAPID_SUBJECT` son solo de servidor. No subas la clave privada al repositorio ni la compartas en el navegador.
