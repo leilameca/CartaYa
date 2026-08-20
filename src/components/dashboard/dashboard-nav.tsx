@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChefHat, CreditCard, Crown, LayoutDashboard, LockKeyhole, QrCode, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { ChefHat, CreditCard, Crown, LayoutDashboard, LockKeyhole, Palette, QrCode, ShoppingBag, Users, UtensilsCrossed } from "lucide-react";
 import { hasTier, type SubscriptionTier } from "@/lib/subscriptions";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
@@ -14,6 +14,8 @@ const links = [
   { href: "/dashboard/qr", label: "Códigos QR", icon: QrCode, roles: ["owner"] },
   { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat, required: "pro" as const, roles: ["owner", "cocina"] },
   { href: "/dashboard/plan", label: "Mi plan", icon: CreditCard, roles: ["owner"] },
+  { href: "/dashboard/equipo", label: "Mi equipo", icon: Users, roles: ["owner"] },
+  { href: "/dashboard/configuracion", label: "Personalización", icon: Palette, roles: ["owner"] },
 ];
 
 type ProfileRole = Database["public"]["Enums"]["profile_role"];

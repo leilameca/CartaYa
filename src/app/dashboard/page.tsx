@@ -9,6 +9,9 @@ export default async function DashboardPage() {
   const { data: profile, error } = await supabase.from("profiles").select("restaurants(name)").eq("id", user.id).single();
   if (error || !profile) throw new Error("No se pudo cargar el restaurante asociado a esta cuenta.");
 
+  const { data: roleProfile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  if (roleProfile?.role === "superadmin") redirect("/admin");
+
   const relation = profile.restaurants as unknown as { name: string } | { name: string }[] | null;
   const restaurant = Array.isArray(relation) ? relation[0] : relation;
 
