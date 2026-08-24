@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const tierSchema = z.enum(["gratis", "plus", "pro"]);
 
-export async function changeDemoPlanAction(formData: FormData) {
+export async function requestPlanChangeAction(formData: FormData) {
   const tier = tierSchema.safeParse(formData.get("tier"));
   if (!tier.success) redirect("/dashboard/plan?error=invalid");
 
@@ -23,16 +23,14 @@ export async function changeDemoPlanAction(formData: FormData) {
   if (!profile || profile.role !== "owner") redirect("/dashboard/plan?error=owner");
 
   const admin = createAdminClient();
-  const { error } = await admin
-    .from("restaurants")
-    .update({ subscription_tier: tier.data })
-    .eq("id", profile.restaurant_id);
-  if (error) redirect("/dashboard/plan?error=update");
+  const { data: restaurant } = await admin.from("restaurants").select("subscription_tier").eq("id", profile.restaurant_id).single();
+  if (!restaurant || restaurant.subscription_tier === tier.data) redirect("/dashboard/plan?error=invalid");
+  await admin.from("plan_change_requests").update({ status: "cancelled" }).eq("restaurant_id", profile.restaurant_id).eq("status", "pending");
+  const note = z.string().trim().max(500).catch("").parse(formData.get("note"));
+  const { error } = await admin.from("plan_change_requests").insert({ restaurant_id: profile.restaurant_id, requested_by: user.id, current_tier: restaurant.subscription_tier, requested_tier: tier.data, note: note || null });
+  if (error) redirect("/dashboard/plan?error=request");
 
-  revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard/plan");
-  revalidatePath("/dashboard/qr");
-  revalidatePath("/dashboard/pedidos");
-  revalidatePath("/dashboard/cocina");
-  redirect(`/dashboard/plan?changed=${tier.data}`);
+  revalidatePath("/admin");
+  redirect(`/dashboard/plan?requested=${tier.data}`);
 }

@@ -26,6 +26,7 @@ export async function sendRestaurantPush({
   body,
   url = "/dashboard",
   tag = "cartaya-update",
+  onlyUserIds,
 }: {
   restaurantId: string;
   audience: PushAudience[];
@@ -33,15 +34,18 @@ export async function sendRestaurantPush({
   body: string;
   url?: string;
   tag?: string;
+  onlyUserIds?: string[];
 }) {
   if (!configure()) return { sent: 0, skipped: true };
 
   const admin = createAdminClient();
-  const { data: profiles, error: profilesError } = await admin
+  let profilesQuery = admin
     .from("profiles")
     .select("id, role")
     .eq("restaurant_id", restaurantId)
     .in("role", audience);
+  if (onlyUserIds?.length) profilesQuery = profilesQuery.in("id", onlyUserIds);
+  const { data: profiles, error: profilesError } = await profilesQuery;
   if (profilesError || !profiles?.length) return { sent: 0, skipped: false };
 
   const userIds = profiles.map((profile) => profile.id);

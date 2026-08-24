@@ -12,6 +12,10 @@ const settingsSchema = z.object({
   phone: z.string().trim().max(40),
   address: z.string().trim().max(240),
   primaryColor: z.string().trim().regex(/^#[0-9a-f]{6}$/i),
+  secondaryColor: z.string().trim().regex(/^#[0-9a-f]{6}$/i),
+  menuStyle: z.enum(["moderno", "clasico", "calido"]),
+  internalPrimaryColor: z.string().trim().regex(/^#[0-9a-f]{6}$/i).optional(),
+  internalSecondaryColor: z.string().trim().regex(/^#[0-9a-f]{6}$/i).optional(),
 });
 
 async function getOwnerContext() {
@@ -22,8 +26,8 @@ async function getOwnerContext() {
   if (!profile || profile.role !== "owner") return { error: "Solo el dueño puede editar la configuración." } as const;
   const relation = profile.restaurants as unknown as { subscription_tier: "gratis" | "plus" | "pro" } | { subscription_tier: "gratis" | "plus" | "pro" }[] | null;
   const restaurant = Array.isArray(relation) ? relation[0] : relation;
-  if (restaurant?.subscription_tier !== "pro") return { error: "La personalización requiere el plan Pro." } as const;
-  return { supabase, restaurantId: profile.restaurant_id } as const;
+  if (!restaurant || restaurant.subscription_tier === "gratis") return { error: "La personalización requiere el plan Plus o Pro." } as const;
+  return { supabase, restaurantId: profile.restaurant_id, tier: restaurant.subscription_tier } as const;
 }
 
 export async function updateRestaurantSettingsAction(formData: FormData) {
@@ -33,6 +37,10 @@ export async function updateRestaurantSettingsAction(formData: FormData) {
     phone: formData.get("phone"),
     address: formData.get("address"),
     primaryColor: formData.get("primaryColor"),
+    secondaryColor: formData.get("secondaryColor"),
+    menuStyle: formData.get("menuStyle"),
+    internalPrimaryColor: formData.get("internalPrimaryColor") || undefined,
+    internalSecondaryColor: formData.get("internalSecondaryColor") || undefined,
   });
   if (!parsed.success) redirect("/dashboard/configuracion?error=formulario");
 
@@ -59,6 +67,9 @@ export async function updateRestaurantSettingsAction(formData: FormData) {
     address: parsed.data.address || null,
     logo_url: logoUrl ?? current?.logo_url ?? null,
     primary_color: parsed.data.primaryColor,
+    secondary_color: parsed.data.secondaryColor,
+    menu_style: parsed.data.menuStyle,
+    ...(context.tier === "pro" ? { internal_primary_color: parsed.data.internalPrimaryColor, internal_secondary_color: parsed.data.internalSecondaryColor } : {}),
   }).eq("id", context.restaurantId);
   if (error) {
     if (logoUrl) await deleteRestaurantLogo(logoUrl, context.restaurantId).catch(console.error);

@@ -27,7 +27,7 @@ Todos los usuarios entran por `/login`. Después de iniciar sesión, el acceso d
 - `/dashboard/cocina`: KDS para el dueño y cocina, desde Pro.
 - `/admin`: panel del SaaS, reservado al perfil `superadmin`.
 
-El dueño crea las cuentas de sus empleados directamente con nombre, correo, contraseña y rol. También puede editar nombre y rol, cambiar la contraseña o eliminar la cuenta. Las credenciales se administran exclusivamente en acciones de servidor mediante Supabase Auth Admin; no se guardan contraseñas en la tabla `profiles`.
+El dueño crea las cuentas de sus empleados directamente con nombre, usuario, clave y rol. Los empleados entran con el identificador del restaurante, su usuario y su clave; no necesitan correo. Las credenciales se administran exclusivamente en acciones de servidor mediante Supabase Auth Admin; no se guardan contraseñas en la tabla `profiles`.
 
 ## Puesta en marcha
 

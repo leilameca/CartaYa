@@ -25,6 +25,8 @@ export type PublicMenuData = {
     slug: string;
     logo_url: string | null;
     primary_color: string;
+    secondary_color: string;
+    menu_style: "moderno" | "clasico" | "calido";
     phone: string | null;
     address: string | null;
     opening_hours: Json;
@@ -41,4 +43,3 @@ export type PublicOrderResult = {
   phone: string | null;
   table_label: string | null;
 };
-

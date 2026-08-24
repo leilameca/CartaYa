@@ -182,6 +182,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          assigned_waiter_id: string | null
           created_by_waiter_id: string | null
           customer_name: string | null
           created_at: string
@@ -193,6 +194,7 @@ export type Database = {
           total: number
         }
         Insert: {
+          assigned_waiter_id?: string | null
           created_by_waiter_id?: string | null
           customer_name?: string | null
           created_at?: string
@@ -204,6 +206,7 @@ export type Database = {
           total?: number
         }
         Update: {
+          assigned_waiter_id?: string | null
           created_by_waiter_id?: string | null
           customer_name?: string | null
           created_at?: string
@@ -236,6 +239,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id", "restaurant_id"]
           },
+          {
+            foreignKeyName: "orders_assigned_waiter_tenant_fk"
+            columns: ["assigned_waiter_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id", "restaurant_id"]
+          },
         ]
       }
       profiles: {
@@ -244,18 +254,24 @@ export type Database = {
           id: string
           restaurant_id: string
           role: Database["public"]["Enums"]["profile_role"]
+          staff_email: string | null
+          staff_username: string | null
         }
         Insert: {
           full_name: string
           id: string
           restaurant_id: string
           role?: Database["public"]["Enums"]["profile_role"]
+          staff_email?: string | null
+          staff_username?: string | null
         }
         Update: {
           full_name?: string
           id?: string
           restaurant_id?: string
           role?: Database["public"]["Enums"]["profile_role"]
+          staff_email?: string | null
+          staff_username?: string | null
         }
         Relationships: [
           {
@@ -277,6 +293,10 @@ export type Database = {
           opening_hours: Json
           phone: string | null
           primary_color: string
+          secondary_color: string
+          menu_style: string
+          internal_primary_color: string
+          internal_secondary_color: string
           slug: string
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
         }
@@ -289,6 +309,10 @@ export type Database = {
           opening_hours?: Json
           phone?: string | null
           primary_color?: string
+          secondary_color?: string
+          menu_style?: string
+          internal_primary_color?: string
+          internal_secondary_color?: string
           slug: string
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
         }
@@ -301,6 +325,10 @@ export type Database = {
           opening_hours?: Json
           phone?: string | null
           primary_color?: string
+          secondary_color?: string
+          menu_style?: string
+          internal_primary_color?: string
+          internal_secondary_color?: string
           slug?: string
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
         }
@@ -335,6 +363,24 @@ export type Database = {
           },
         ]
       }
+      table_service_requests: {
+        Row: { id: string; restaurant_id: string; table_id: string; status: string; claimed_by: string | null; created_at: string; claimed_at: string | null; resolved_at: string | null }
+        Insert: { id?: string; restaurant_id: string; table_id: string; status?: string; claimed_by?: string | null; created_at?: string; claimed_at?: string | null; resolved_at?: string | null }
+        Update: { id?: string; restaurant_id?: string; table_id?: string; status?: string; claimed_by?: string | null; created_at?: string; claimed_at?: string | null; resolved_at?: string | null }
+        Relationships: []
+      }
+      table_service_sessions: {
+        Row: { id: string; restaurant_id: string; table_id: string; waiter_id: string; status: string; claimed_at: string; last_activity_at: string; closed_at: string | null }
+        Insert: { id?: string; restaurant_id: string; table_id: string; waiter_id: string; status?: string; claimed_at?: string; last_activity_at?: string; closed_at?: string | null }
+        Update: { id?: string; restaurant_id?: string; table_id?: string; waiter_id?: string; status?: string; claimed_at?: string; last_activity_at?: string; closed_at?: string | null }
+        Relationships: []
+      }
+      plan_change_requests: {
+        Row: { id: string; restaurant_id: string; requested_by: string; current_tier: Database["public"]["Enums"]["subscription_tier"]; requested_tier: Database["public"]["Enums"]["subscription_tier"]; note: string | null; status: string; created_at: string; reviewed_at: string | null; reviewed_by: string | null }
+        Insert: { id?: string; restaurant_id: string; requested_by: string; current_tier: Database["public"]["Enums"]["subscription_tier"]; requested_tier: Database["public"]["Enums"]["subscription_tier"]; note?: string | null; status?: string; created_at?: string; reviewed_at?: string | null; reviewed_by?: string | null }
+        Update: { id?: string; restaurant_id?: string; requested_by?: string; current_tier?: Database["public"]["Enums"]["subscription_tier"]; requested_tier?: Database["public"]["Enums"]["subscription_tier"]; note?: string | null; status?: string; created_at?: string; reviewed_at?: string | null; reviewed_by?: string | null }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -362,6 +408,8 @@ export type Database = {
         Args: { target_restaurant_id: string }
         Returns: boolean
       }
+      claim_table_service_request: { Args: { p_request_id: string }; Returns: Json }
+      close_table_service_session: { Args: { p_session_id: string }; Returns: boolean }
       complete_restaurant_owner_onboarding: {
         Args: {
           p_phone: string

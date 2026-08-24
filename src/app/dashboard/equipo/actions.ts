@@ -6,8 +6,9 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-const memberSchema = z.object({ email: z.string().trim().email(), password: z.string().min(8).max(72), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
-const updateMemberSchema = z.object({ memberId: z.string().uuid(), password: z.string().min(8).max(72).optional().or(z.literal("")), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
+const usernameSchema = z.string().trim().toLowerCase().min(3).max(30).regex(/^[a-z0-9._-]+$/);
+const memberSchema = z.object({ username: usernameSchema, password: z.string().min(6).max(72), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
+const updateMemberSchema = z.object({ memberId: z.string().uuid(), username: usernameSchema, password: z.string().min(6).max(72).optional().or(z.literal("")), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
 
 async function getOwnerContext() {
   const supabase = await createClient();
@@ -22,14 +23,15 @@ async function getOwnerContext() {
 }
 
 export async function createTeamMemberAction(formData: FormData) {
-  const parsed = memberSchema.safeParse({ email: formData.get("email"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
+  const parsed = memberSchema.safeParse({ username: formData.get("username"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
   if (!parsed.success) redirect("/dashboard/equipo?error=formulario");
   const context = await getOwnerContext();
   if ("error" in context) redirect("/dashboard/equipo?error=permisos");
   const admin = createAdminClient();
-  const { data, error } = await admin.auth.admin.createUser({ email: parsed.data.email, password: parsed.data.password, email_confirm: true, user_metadata: { full_name: parsed.data.fullName, signup_type: "restaurant_staff" } });
+  const staffEmail = `staff-${crypto.randomUUID()}@access.cartaya.local`;
+  const { data, error } = await admin.auth.admin.createUser({ email: staffEmail, password: parsed.data.password, email_confirm: true, user_metadata: { full_name: parsed.data.fullName, signup_type: "restaurant_staff" } });
   if (error || !data.user) redirect("/dashboard/equipo?error=crear");
-  const { error: profileError } = await admin.from("profiles").insert({ id: data.user.id, restaurant_id: context.restaurantId, full_name: parsed.data.fullName, role: parsed.data.role });
+  const { error: profileError } = await admin.from("profiles").insert({ id: data.user.id, restaurant_id: context.restaurantId, full_name: parsed.data.fullName, role: parsed.data.role, staff_username: parsed.data.username, staff_email: staffEmail });
   if (profileError) {
     await admin.auth.admin.deleteUser(data.user.id);
     redirect("/dashboard/equipo?error=perfil");
@@ -39,14 +41,14 @@ export async function createTeamMemberAction(formData: FormData) {
 }
 
 export async function updateTeamMemberAction(formData: FormData) {
-  const parsed = updateMemberSchema.safeParse({ memberId: formData.get("memberId"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
+  const parsed = updateMemberSchema.safeParse({ memberId: formData.get("memberId"), username: formData.get("username"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
   if (!parsed.success) redirect("/dashboard/equipo?error=formulario");
   const context = await getOwnerContext();
   if ("error" in context) redirect("/dashboard/equipo?error=permisos");
   const admin = createAdminClient();
   const { data: member } = await admin.from("profiles").select("id").eq("id", parsed.data.memberId).eq("restaurant_id", context.restaurantId).neq("role", "owner").maybeSingle();
   if (!member) redirect("/dashboard/equipo?error=empleado");
-  const { error: profileError } = await admin.from("profiles").update({ full_name: parsed.data.fullName, role: parsed.data.role }).eq("id", parsed.data.memberId).eq("restaurant_id", context.restaurantId);
+  const { error: profileError } = await admin.from("profiles").update({ full_name: parsed.data.fullName, role: parsed.data.role, staff_username: parsed.data.username }).eq("id", parsed.data.memberId).eq("restaurant_id", context.restaurantId);
   if (profileError) redirect("/dashboard/equipo?error=actualizar");
   if (parsed.data.password) {
     const { error: passwordError } = await admin.auth.admin.updateUserById(parsed.data.memberId, { password: parsed.data.password, user_metadata: { full_name: parsed.data.fullName } });

@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { z } from "zod";
 import { REMEMBER_ME_MAX_AGE, SESSION_MODE_COOKIE } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -57,6 +58,40 @@ export async function loginAction(_state: ActionState, formData: FormData): Prom
 
   const redirectTo = formData.get("redirectTo");
   redirect(typeof redirectTo === "string" && redirectTo.startsWith("/") ? redirectTo : "/dashboard");
+}
+
+const employeeLoginSchema = z.object({
+  restaurant: z.string().trim().toLowerCase().min(2).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  username: z.string().trim().toLowerCase().min(3).max(30).regex(/^[a-z0-9._-]+$/),
+  password: z.string().min(6).max(72),
+});
+
+export async function employeeLoginAction(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = employeeLoginSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Revisa el restaurante, usuario y clave." };
+
+  const admin = createAdminClient();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("staff_email, role, restaurants!inner(slug, subscription_tier)")
+    .ilike("staff_username", parsed.data.username)
+    .eq("restaurants.slug", parsed.data.restaurant)
+    .in("role", ["mesero", "cocina"])
+    .maybeSingle();
+  const relation = profile?.restaurants as unknown as { subscription_tier: string } | { subscription_tier: string }[] | null;
+  const restaurant = Array.isArray(relation) ? relation[0] : relation;
+  if (!profile?.staff_email || restaurant?.subscription_tier !== "pro") return { error: "Acceso de empleado incorrecto o plan Pro inactivo." };
+
+  const rememberMe = formData.get("rememberMe") === "on";
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_MODE_COOKIE, rememberMe ? "persistent" : "session", {
+    httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/",
+    ...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE } : {}),
+  });
+  const supabase = await createClient({ sessionOnly: !rememberMe });
+  const { error } = await supabase.auth.signInWithPassword({ email: profile.staff_email, password: parsed.data.password });
+  if (error) return { error: "Restaurante, usuario o clave incorrectos." };
+  redirect("/dashboard");
 }
 
 export async function registerAction(_state: ActionState, formData: FormData): Promise<ActionState> {

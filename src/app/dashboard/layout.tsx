@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/actions";
 import { BrandLogo } from "@/components/brand-logo";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
+import { GlobalRealtimeAlerts } from "@/components/dashboard/global-realtime-alerts";
 import { PushNotifications } from "@/components/dashboard/push-notifications";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
@@ -12,14 +13,14 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("full_name, role, restaurants(name, subscription_tier)").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase.from("profiles").select("restaurant_id, full_name, role, restaurants(name, subscription_tier, internal_primary_color, internal_secondary_color)").eq("id", user.id).maybeSingle();
   if (!profile) redirect("/completar-registro");
 
-  const relation = profile.restaurants as unknown as { name: string; subscription_tier: "gratis" | "plus" | "pro" } | { name: string; subscription_tier: "gratis" | "plus" | "pro" }[] | null;
+  const relation = profile.restaurants as unknown as { name: string; subscription_tier: "gratis" | "plus" | "pro"; internal_primary_color: string; internal_secondary_color: string } | { name: string; subscription_tier: "gratis" | "plus" | "pro"; internal_primary_color: string; internal_secondary_color: string }[] | null;
   const restaurant = Array.isArray(relation) ? relation[0] : relation;
 
   return (
-    <div className="min-h-screen bg-brand-gray">
+    <div className="min-h-screen bg-brand-gray" style={{ "--brand-orange": restaurant?.subscription_tier === "pro" ? restaurant.internal_primary_color : "#FF6B35", "--brand-green": restaurant?.subscription_tier === "pro" ? restaurant.internal_secondary_color : "#00A86B" } as React.CSSProperties}>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r bg-white lg:flex lg:flex-col">
         <div className="border-b px-6 py-5"><BrandLogo className="w-32" priority /></div>
         <div className="px-6 pb-5 pt-6">
@@ -43,6 +44,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
         </header>
         {children}
       </div>
+      <GlobalRealtimeAlerts restaurantId={profile.restaurant_id} role={profile.role} />
     </div>
   );
 }

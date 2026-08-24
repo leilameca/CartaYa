@@ -11,6 +11,8 @@ export default async function DashboardPage() {
 
   const { data: roleProfile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (roleProfile?.role === "superadmin") redirect("/admin");
+  if (roleProfile?.role === "cocina") redirect("/dashboard/cocina");
+  if (roleProfile?.role === "mesero") redirect("/dashboard/salon");
 
   const relation = profile.restaurants as unknown as { name: string } | { name: string }[] | null;
   const restaurant = Array.isArray(relation) ? relation[0] : relation;

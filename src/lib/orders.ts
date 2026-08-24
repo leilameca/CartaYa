@@ -11,6 +11,7 @@ export const ORDER_SELECT = `
   notes,
   customer_name,
   created_by_waiter_id,
+  assigned_waiter_id,
   created_at,
   table:tables(label),
   items:order_items(
@@ -32,6 +33,7 @@ type RawOrder = {
   notes: string | null;
   customer_name: string | null;
   created_by_waiter_id: string | null;
+  assigned_waiter_id: string | null;
   created_at: string;
   table: { label: string } | { label: string }[] | null;
   items: Array<{
@@ -59,6 +61,7 @@ export function normalizeOrder(raw: RawOrder): DashboardOrder {
     notes: raw.notes,
     customerName: raw.customer_name,
     createdByWaiterId: raw.created_by_waiter_id,
+    assignedWaiterId: raw.assigned_waiter_id,
     createdAt: raw.created_at,
     items: (raw.items ?? []).map((item) => ({
       id: item.id,
@@ -88,4 +91,3 @@ export async function fetchRestaurantOrders(
   if (error) throw new Error(`No se pudieron cargar los pedidos: ${error.message}`);
   return (data as unknown as RawOrder[]).map(normalizeOrder);
 }
-

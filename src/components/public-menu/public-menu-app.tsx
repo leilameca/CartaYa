@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { isRestaurantOpen } from "@/lib/opening-hours";
 import type { PublicMenuData, PublicMenuItem, PublicOrderResult } from "@/types/public-menu";
+import { KitchenMiniGames } from "@/components/public-menu/kitchen-mini-games";
 
 const currency = new Intl.NumberFormat("es-DO", {
   style: "currency",
@@ -64,6 +65,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
   const [notes, setNotes] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [orderState, setOrderState] = useState<OrderState>({});
+  const [serviceState, setServiceState] = useState<{ loading?: boolean; success?: string; error?: string }>({});
 
   useEffect(() => {
     const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
@@ -119,6 +121,8 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
   const restaurantOpen = isRestaurantOpen(menu.restaurant.opening_hours, now);
   const canOrder = restaurantOpen && menu.table_valid;
   const primaryColor = menu.restaurant.primary_color || "#FF6B35";
+  const secondaryColor = menu.restaurant.secondary_color || "#00A86B";
+  const menuStyle = menu.restaurant.menu_style || "moderno";
 
   function changeQuantity(itemId: string, delta: number) {
     setOrderState({});
@@ -175,10 +179,22 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
     }
   }
 
+  async function requestWaiter() {
+    if (!menu.table) return;
+    setServiceState({ loading: true });
+    try {
+      const response = await fetch("/api/public/service-requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: menu.restaurant.slug, tableId: menu.table.id }) });
+      const result = await response.json() as { error?: string; alreadyPending?: boolean };
+      if (!response.ok) throw new Error(result.error ?? "No pudimos avisar al mesero.");
+      setServiceState({ success: result.alreadyPending ? "Tu solicitud ya está en espera." : "¡Listo! Un mesero aceptará tu mesa enseguida." });
+      navigator.vibrate?.(120);
+    } catch (error) { setServiceState({ error: error instanceof Error ? error.message : "No pudimos avisar al mesero." }); }
+  }
+
   const freePlanPhone = menu.restaurant.phone ? `tel:${menu.restaurant.phone.replace(/[^\d+]/g, "")}` : undefined;
 
   return (
-    <main className="min-h-[100svh] bg-[#f7f8fa] pb-32 text-brand-navy">
+    <main className={`min-h-[100svh] pb-32 text-brand-navy ${menuStyle === "calido" ? "bg-amber-50" : menuStyle === "clasico" ? "bg-stone-50" : "bg-[#f7f8fa]"}`}>
       {!online ? (
         <div className="sticky top-0 z-50 flex items-center justify-center gap-2 bg-amber-400 px-4 py-2 text-center text-xs font-bold text-amber-950">
           <WifiOff className="size-4" /> Sin conexión — estás viendo el último menú guardado
@@ -187,7 +203,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
 
       <header
         className="relative overflow-hidden px-5 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white sm:px-8 lg:px-12"
-        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${rgba(primaryColor, 0.76)} 56%, #1A2530)` }}
+        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor} 62%, #1A2530)` }}
       >
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full border-[42px] border-white/10" />
         <div className="relative mx-auto flex w-full max-w-7xl items-start justify-between gap-5">
@@ -304,6 +320,10 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
         ))}
       </div>
 
+      {menu.table && menu.restaurant.subscription_tier === "pro" ? <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-8"><div className="flex flex-col gap-4 rounded-3xl border bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><p className="font-black text-brand-navy">¿Necesitas ayuda en la mesa?</p><p className="text-sm text-slate-500">Avisa al equipo; el primer mesero que acepte quedará a cargo de tu mesa.</p>{serviceState.success ? <p className="mt-2 text-sm font-bold text-emerald-600">{serviceState.success}</p> : null}{serviceState.error ? <p className="mt-2 text-sm font-bold text-red-600">{serviceState.error}</p> : null}</div><button onClick={requestWaiter} disabled={serviceState.loading || Boolean(serviceState.success)} className="shrink-0 rounded-xl px-5 py-3 font-black text-white disabled:opacity-60" style={{ backgroundColor: menu.restaurant.secondary_color }}>{serviceState.loading ? "Avisando…" : "🔔 Llamar a un mesero"}</button></div></section> : null}
+
+      <KitchenMiniGames primaryColor={primaryColor} />
+
       {itemCount > 0 ? (
         <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8">
           <button
@@ -344,7 +364,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
                 ))}
               </div>
 
-              <label className="mt-6 block text-sm font-bold" htmlFor="order-notes">Notas para el restaurante</label>
+              <label className="mt-6 block text-sm font-bold" htmlFor="order-notes">Notas para cocina</label>
               <textarea id="order-notes" value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={500} rows={2} placeholder="Ej.: sin cebolla, alergias…" className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-transparent focus:ring-2" style={{ "--tw-ring-color": primaryColor } as React.CSSProperties} />
 
               <label className="mt-5 block text-sm font-bold" htmlFor="customer-name">¿A nombre de quién va este pedido?</label>
@@ -374,7 +394,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
                   className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 font-extrabold text-white shadow-lg disabled:cursor-not-allowed disabled:bg-slate-300"
                   style={!orderState.loading && canOrder && online ? { backgroundColor: primaryColor } : undefined}
                 >
-                  <ShoppingBag className="size-5" /> {orderState.loading ? "Enviando pedido…" : "Confirmar y enviar por WhatsApp"}
+                  <ShoppingBag className="size-5" /> {orderState.loading ? "Enviando pedido…" : "Enviar pedido a cocina"}
                 </button>
               )}
               {!online && menu.restaurant.subscription_tier !== "gratis" ? <p className="mt-2 text-center text-xs text-slate-500">Conéctate a internet para enviar el pedido.</p> : null}

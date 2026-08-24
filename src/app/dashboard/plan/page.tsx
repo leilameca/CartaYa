@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Check, Crown, LockKeyhole, Sparkles, X } from "lucide-react";
-import { changeDemoPlanAction } from "@/app/dashboard/plan/actions";
+import { requestPlanChangeAction } from "@/app/dashboard/plan/actions";
 import { Button } from "@/components/ui/button";
 import { planNames, type SubscriptionTier } from "@/lib/subscriptions";
 import { createClient } from "@/lib/supabase/server";
@@ -29,7 +29,7 @@ function FeatureValue({ value }: { value: boolean | string }) {
   return <span className="text-xs font-bold text-brand-navy sm:text-sm">{value}</span>;
 }
 
-export default async function PlanPage({ searchParams }: { searchParams: Promise<{ required?: string; changed?: string; error?: string }> }) {
+export default async function PlanPage({ searchParams }: { searchParams: Promise<{ required?: string; requested?: string; error?: string }> }) {
   const params = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -44,7 +44,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       {params.required === "pro" ? <PlanAlert icon={<Crown className="size-5" />} text="La Pantalla de Cocina en tiempo real requiere el plan Pro." /> : null}
       {params.required === "plus" ? <PlanAlert icon={<LockKeyhole className="size-5" />} text="Los pedidos automáticos, su historial y los QR por mesa requieren Plus o Pro." /> : null}
-      {params.changed ? <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-700">Plan cambiado a {planNames[current]}. Los permisos ya están actualizados.</div> : null}
+      {params.requested ? <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-700">Solicitud enviada. Revisaremos el cambio y te contactaremos antes de activarlo.</div> : null}
       {params.error ? <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700">No se pudo cambiar el plan. Solo la cuenta propietaria puede hacerlo.</div> : null}
 
       <p className="text-sm font-bold uppercase tracking-[0.16em] text-brand-green">Suscripción</p>
@@ -65,9 +65,9 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
               {active ? (
                 <Button disabled className="mt-6 w-full rounded-xl bg-brand-green">Plan actual</Button>
               ) : profile.role === "owner" ? (
-                <form action={changeDemoPlanAction} className="mt-6">
+                <form action={requestPlanChangeAction} className="mt-6">
                   <input type="hidden" name="tier" value={plan.id} />
-                  <Button className={cn("w-full gap-2 rounded-xl", plan.id === "pro" ? "bg-brand-green hover:bg-brand-green/90" : "bg-brand-orange hover:bg-brand-orange/90")}><Sparkles className="size-4" />Cambiar a {planNames[plan.id]}</Button>
+                  <Button className={cn("w-full gap-2 rounded-xl", plan.id === "pro" ? "bg-brand-green hover:bg-brand-green/90" : "bg-brand-orange hover:bg-brand-orange/90")}><Sparkles className="size-4" />Solicitar {planNames[plan.id]}</Button>
                 </form>
               ) : <Button disabled className="mt-6 w-full rounded-xl">Solo el propietario</Button>}
             </article>
@@ -85,7 +85,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
         </div>
       </section>
 
-      <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900"><strong>Modo de prueba:</strong> estos botones cambian el nivel real en Supabase sin realizar un cobro. Se reemplazarán por la pasarela de pago antes del lanzamiento comercial.</div>
+      <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between"><span><strong>Activación manual:</strong> tu plan no cambia hasta que aprobemos la solicitud. La solicitud llega directamente al panel de CartaYa.</span>{process.env.NEXT_PUBLIC_SALES_WHATSAPP ? <a className="rounded-xl bg-brand-navy px-4 py-2 text-center font-bold text-white" href={`https://wa.me/${process.env.NEXT_PUBLIC_SALES_WHATSAPP}`} target="_blank" rel="noreferrer">Contactar por WhatsApp</a> : null}</div>
     </main>
   );
 }

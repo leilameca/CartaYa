@@ -2,20 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChefHat, CreditCard, Crown, LayoutDashboard, LockKeyhole, Palette, QrCode, ShoppingBag, Users, UtensilsCrossed } from "lucide-react";
+import { BellRing, ChefHat, CreditCard, Crown, LayoutDashboard, LockKeyhole, Palette, QrCode, ShoppingBag, Users, UtensilsCrossed } from "lucide-react";
 import { hasTier, type SubscriptionTier } from "@/lib/subscriptions";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
 const links = [
-  { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, roles: ["owner", "mesero", "cocina"] },
+  { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, roles: ["owner", "mesero"] },
   { href: "/dashboard/menu", label: "Gestor de menú", icon: UtensilsCrossed, roles: ["owner"] },
   { href: "/dashboard/pedidos", label: "Pedidos", icon: ShoppingBag, required: "plus" as const, roles: ["owner", "mesero"] },
+  { href: "/dashboard/salon", label: "Mis mesas", icon: BellRing, required: "pro" as const, roles: ["mesero"] },
   { href: "/dashboard/qr", label: "Códigos QR", icon: QrCode, roles: ["owner"] },
   { href: "/dashboard/cocina", label: "Cocina (KDS)", icon: ChefHat, required: "pro" as const, roles: ["owner", "cocina"] },
   { href: "/dashboard/plan", label: "Mi plan", icon: CreditCard, roles: ["owner"] },
   { href: "/dashboard/equipo", label: "Mi equipo", icon: Users, roles: ["owner"], required: "pro" as const },
-  { href: "/dashboard/configuracion", label: "Personalización", icon: Palette, roles: ["owner"], required: "pro" as const },
+  { href: "/dashboard/configuracion", label: "Personalización", icon: Palette, roles: ["owner"], required: "plus" as const },
 ];
 
 type ProfileRole = Database["public"]["Enums"]["profile_role"];
