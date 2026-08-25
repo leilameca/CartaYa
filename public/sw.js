@@ -1,4 +1,4 @@
-const CACHE_NAME = "cartaya-menu-v1";
+const CACHE_NAME = "cartaya-menu-v2";
 const APP_SHELL = ["/offline", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -49,8 +49,7 @@ self.addEventListener("push", (event) => {
     if (event.data) payload = { ...payload, ...event.data.json() };
   } catch {}
 
-  event.waitUntil(
-    self.registration.showNotification(payload.title, {
+  const show = self.registration.showNotification(payload.title, {
       body: payload.body,
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
@@ -58,12 +57,14 @@ self.addEventListener("push", (event) => {
       renotify: true,
       vibrate: [200, 100, 200],
       data: { url: payload.url },
-    }),
-  );
+    });
+  const badge = typeof self.navigator?.setAppBadge === "function" ? self.navigator.setAppBadge(1) : Promise.resolve();
+  event.waitUntil(Promise.all([show, badge]));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  if (typeof self.navigator?.clearAppBadge === "function") void self.navigator.clearAppBadge();
   const targetUrl = new URL(event.notification.data?.url || "/dashboard", self.location.origin).href;
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
@@ -76,4 +77,3 @@ self.addEventListener("notificationclick", (event) => {
     }),
   );
 });
-

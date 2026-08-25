@@ -1,14 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
-import { Apple, Carrot, ChefHat, Cherry, CircleDot, CookingPot, Fish, Gamepad2, PackageCheck, Plane, Play, RotateCcw, Sparkles, Timer, Trophy, X } from "lucide-react";
+import { Apple, Carrot, ChefHat, Cherry, CircleDot, CookingPot, Fish, Gamepad2, Heart, PackageCheck, Plane, Play, RotateCcw, Sparkles, Timer, Trophy, X } from "lucide-react";
 
 type Game = "runner" | "match" | "delivery";
 type Ingredient = 0 | 1 | 2 | 3 | 4;
 type Scores = Record<Game, number>;
 
 const SIZE = 6;
-const SECONDS = 30;
+const SECONDS = 40;
 const ingredientTypes: Array<{ icon: ComponentType<{ className?: string }>; style: string; name: string }> = [
   { icon: Carrot, style: "bg-orange-100 text-orange-600", name: "zanahoria" },
   { icon: Apple, style: "bg-red-100 text-red-600", name: "manzana" },
@@ -16,10 +16,10 @@ const ingredientTypes: Array<{ icon: ComponentType<{ className?: string }>; styl
   { icon: Cherry, style: "bg-pink-100 text-pink-600", name: "cereza" },
   { icon: CircleDot, style: "bg-amber-100 text-amber-700", name: "plato" },
 ];
-const games: Array<{ id: Game; title: string; subtitle: string; icon: ComponentType<{ className?: string }>; gradient: string }> = [
-  { id: "runner", title: "Chef al Rescate", subtitle: "Corre, salta utensilios y mantén la cocina en marcha", icon: ChefHat, gradient: "from-orange-600 via-orange-500 to-amber-400" },
-  { id: "match", title: "Sazón al Tres", subtitle: "Une tres ingredientes iguales y crea combos", icon: Sparkles, gradient: "from-emerald-700 via-emerald-600 to-lime-500" },
-  { id: "delivery", title: "Pedido Volador", subtitle: "Lleva el pedido caliente entre puertas y obstáculos", icon: Plane, gradient: "from-blue-800 via-blue-700 to-cyan-500" },
+const games: Array<{ id: Game; title: string; subtitle: string; icon: ComponentType<{ className?: string }>; gradient: string; position: string }> = [
+  { id: "runner", title: "Chef al Rescate", subtitle: "Corre, salta utensilios y mantén la cocina en marcha", icon: ChefHat, gradient: "from-orange-950/90 via-orange-700/65 to-transparent", position: "left center" },
+  { id: "match", title: "Sazón al Tres", subtitle: "Une tres ingredientes iguales y crea combos", icon: Sparkles, gradient: "from-emerald-950/90 via-emerald-700/60 to-transparent", position: "center center" },
+  { id: "delivery", title: "Pedido Volador", subtitle: "Lleva el pedido caliente entre puertas y obstáculos", icon: Plane, gradient: "from-blue-950/90 via-blue-800/65 to-transparent", position: "right center" },
 ];
 
 function newBoard(): Ingredient[] {
@@ -71,7 +71,9 @@ function resolveBoard(board: Ingredient[]) {
 
 export function KitchenMiniGames({ primaryColor }: { primaryColor: string }) {
   const [active, setActive] = useState<Game | null>(null);
+  const [playing, setPlaying] = useState(false);
   const [over, setOver] = useState(false);
+  const [lives, setLives] = useState(3);
   const [score, setScore] = useState(0);
   const [best, setBest] = useState<Scores>(() => {
     if (typeof window === "undefined") return { runner: 0, match: 0, delivery: 0 };
@@ -108,12 +110,14 @@ export function KitchenMiniGames({ primaryColor }: { primaryColor: string }) {
   }, []);
 
   const start = useCallback((game: Game) => {
-    setActive(game); setOver(false); setScore(0); setTime(SECONDS); setObstacleX(105);
+    setActive(game); setPlaying(false); setOver(false); setLives(3); setScore(0); setTime(SECONDS); setObstacleX(105);
     jumpingRef.current = false; setJumping(false); setBoard(resolveBoard(newBoard()).board);
     setSelected(null); setMatchHint("Selecciona dos ingredientes vecinos");
     deliveryYRef.current = 45; velocityRef.current = 0; doorXRef.current = 105; doorGapRef.current = 48;
     setDeliveryY(45); setDoorX(105); setDoorGap(48);
   }, []);
+
+  const begin = useCallback(() => setPlaying(true), []);
 
   const close = useCallback(() => {
     if (jumpTimer.current) window.clearTimeout(jumpTimer.current);
@@ -121,38 +125,41 @@ export function KitchenMiniGames({ primaryColor }: { primaryColor: string }) {
   }, []);
 
   const jump = useCallback(() => {
-    if (active !== "runner" || over || jumpingRef.current) return;
+    if (active !== "runner" || !playing || over || jumpingRef.current) return;
     jumpingRef.current = true; setJumping(true);
     if (jumpTimer.current) window.clearTimeout(jumpTimer.current);
     jumpTimer.current = window.setTimeout(() => { jumpingRef.current = false; setJumping(false); }, 600);
-  }, [active, over]);
+  }, [active, over, playing]);
 
   const flap = useCallback(() => {
-    if (active === "delivery" && !over) velocityRef.current = -3.25;
-  }, [active, over]);
+    if (active === "delivery" && playing && !over) velocityRef.current = -3.25;
+  }, [active, over, playing]);
 
   useEffect(() => {
-    if (!active || over) return;
+    if (!active || !playing || over) return;
     const id = window.setInterval(() => setTime((value) => {
-      if (value <= 1) { setOver(true); return 0; }
+      if (value <= 1) { setPlaying(false); setOver(true); return 0; }
       return value - 1;
     }), 1_000);
     return () => window.clearInterval(id);
-  }, [active, over]);
+  }, [active, over, playing]);
 
   useEffect(() => {
-    if (active !== "runner" || over) return;
+    if (active !== "runner" || !playing || over) return;
     const id = window.setInterval(() => setObstacleX((value) => {
       const next = value - Math.min(4.8, 1.9 + score * 0.09);
-      if (next >= 13 && next <= 27 && !jumpingRef.current) { setOver(true); return next; }
+      if (next >= 13 && next <= 27 && !jumpingRef.current) {
+        if (lives > 1) { setLives(lives - 1); return 105; }
+        setPlaying(false); setOver(true); return next;
+      }
       if (next <= -12) { const points = score + 1; setScore(points); saveBest("runner", points); return 105; }
       return next;
     }), 40);
     return () => window.clearInterval(id);
-  }, [active, over, saveBest, score]);
+  }, [active, lives, over, playing, saveBest, score]);
 
   useEffect(() => {
-    if (active !== "delivery" || over) return;
+    if (active !== "delivery" || !playing || over) return;
     const id = window.setInterval(() => {
       velocityRef.current += 0.24;
       deliveryYRef.current += velocityRef.current;
@@ -162,11 +169,15 @@ export function KitchenMiniGames({ primaryColor }: { primaryColor: string }) {
         doorXRef.current = 108; doorGapRef.current = 28 + Math.random() * 44; setScore(points); saveBest("delivery", points);
       }
       const y = deliveryYRef.current, x = doorXRef.current;
-      if (y < 4 || y > 88 || (x > 14 && x < 29 && (y < doorGapRef.current - 15 || y > doorGapRef.current + 15))) setOver(true);
+      if (y < 4 || y > 88 || (x > 14 && x < 29 && (y < doorGapRef.current - 15 || y > doorGapRef.current + 15))) {
+        if (lives > 1) {
+          setLives(lives - 1); deliveryYRef.current = 45; velocityRef.current = 0; doorXRef.current = 105;
+        } else { setPlaying(false); setOver(true); }
+      }
       setDeliveryY(y); setDoorX(x); setDoorGap(doorGapRef.current);
     }, 40);
     return () => window.clearInterval(id);
-  }, [active, over, saveBest, score]);
+  }, [active, lives, over, playing, saveBest, score]);
 
   useEffect(() => {
     if (!active) return;
@@ -183,7 +194,7 @@ export function KitchenMiniGames({ primaryColor }: { primaryColor: string }) {
   useEffect(() => () => { if (jumpTimer.current) window.clearTimeout(jumpTimer.current); }, []);
 
   function chooseTile(index: number) {
-    if (over) return;
+    if (over || !playing) return;
     if (selected === null) { setSelected(index); setMatchHint("Ahora elige un ingrediente vecino"); return; }
     if (selected === index) { setSelected(null); setMatchHint("Selección cancelada"); return; }
     const adjacent = Math.abs(Math.floor(selected / SIZE) - Math.floor(index / SIZE)) + Math.abs((selected % SIZE) - (index % SIZE)) === 1;
@@ -208,17 +219,18 @@ export function KitchenMiniGames({ primaryColor }: { primaryColor: string }) {
         <div className="absolute -right-16 -top-20 size-64 rounded-full bg-white/5" />
         <div className="relative flex items-center gap-3"><span className="flex size-12 items-center justify-center rounded-2xl bg-white/10"><Gamepad2 /></span><div><p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: primaryColor }}>Mientras esperas</p><h2 className="text-2xl font-black">Arcade de cocina</h2></div></div>
         <div className="relative mt-6 grid gap-3 md:grid-cols-3">
-          {games.map((game) => { const Icon = game.icon; return <button key={game.id} type="button" onClick={() => start(game.id)} className={`group rounded-2xl bg-gradient-to-br ${game.gradient} p-5 text-left shadow-lg transition hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50 active:scale-[0.98]`}><span className="flex size-11 items-center justify-center rounded-xl bg-white/20"><Icon /></span><strong className="mt-8 block text-xl">{game.title}</strong><span className="mt-1 block min-h-10 text-sm text-white/85">{game.subtitle}</span><span className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-black"><Play className="size-3.5" />Jugar ahora</span></button>; })}
+          {games.map((game) => { const Icon = game.icon; return <button key={game.id} type="button" onClick={() => start(game.id)} style={{ backgroundImage: "url('/game-assets/chef-arcade-worlds.png')", backgroundSize: "300% 100%", backgroundPosition: game.position }} className="group relative overflow-hidden rounded-2xl p-5 text-left shadow-lg transition hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50 active:scale-[0.98]"><span className={`absolute inset-0 bg-gradient-to-br ${game.gradient}`} /><span className="relative flex size-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm"><Icon /></span><strong className="relative mt-8 block text-xl">{game.title}</strong><span className="relative mt-1 block min-h-10 text-sm text-white/90">{game.subtitle}</span><span className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-black backdrop-blur-sm"><Play className="size-3.5" />Jugar ahora</span></button>; })}
         </div>
       </div>
 
       {active ? <div className="fixed inset-0 z-[80] flex items-end bg-slate-950/75 backdrop-blur-sm sm:items-center sm:justify-center sm:p-5" role="dialog" aria-modal="true" aria-label={meta?.title}>
         <div className="w-full overflow-hidden rounded-t-[2rem] bg-white shadow-2xl sm:max-w-2xl sm:rounded-[2rem]">
-          <header className="flex items-center justify-between bg-brand-navy px-4 py-4 text-white sm:px-5"><div className="flex min-w-0 items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/10"><ActiveIcon className="size-5" /></span><div className="min-w-0"><p className="truncate text-xs font-bold uppercase text-white/60">Puntos {score} · Récord {record}</p><h3 className="truncate text-lg font-black sm:text-xl">{meta?.title}</h3></div></div><div className="flex items-center gap-2"><span className="flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1.5 text-sm font-black"><Timer className="size-4" />{time}s</span><button type="button" onClick={close} className="rounded-full bg-white/10 p-2 hover:bg-white/20" aria-label="Cerrar juego"><X /></button></div></header>
+          <header className="flex items-center justify-between bg-brand-navy px-4 py-4 text-white sm:px-5"><div className="flex min-w-0 items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/10"><ActiveIcon className="size-5" /></span><div className="min-w-0"><p className="truncate text-xs font-bold uppercase text-white/60">Puntos {score} · Récord {record}</p><h3 className="truncate text-lg font-black sm:text-xl">{meta?.title}</h3></div></div><div className="flex items-center gap-2">{active !== "match" ? <span className="hidden items-center gap-1 rounded-full bg-red-500/20 px-2 py-1.5 sm:flex">{Array.from({ length: lives }, (_, index) => <Heart key={index} className="size-3.5 fill-red-400 text-red-400" />)}</span> : null}<span className="flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1.5 text-sm font-black"><Timer className="size-4" />{time}s</span><button type="button" onClick={close} className="rounded-full bg-white/10 p-2 hover:bg-white/20" aria-label="Cerrar juego"><X /></button></div></header>
           <div className="relative h-[430px] overflow-hidden bg-gradient-to-b from-sky-100 to-amber-50 p-3 touch-manipulation select-none sm:h-[480px] sm:p-5">
-            {active === "runner" ? <div className="relative h-full overflow-hidden rounded-2xl border border-sky-200 bg-sky-100"><span className="absolute left-[12%] top-20 h-5 w-16 rounded-full bg-white/80" /><span className="absolute right-[16%] top-28 h-5 w-20 rounded-full bg-white/70" /><div className="absolute inset-x-0 bottom-0 h-24 bg-amber-100" /><div className="absolute inset-x-0 bottom-20 h-3 bg-brand-navy" /><div className={`absolute bottom-[5.4rem] left-[16%] flex size-14 items-center justify-center rounded-2xl bg-white text-brand-navy shadow-xl transition-transform duration-300 sm:size-16 ${jumping ? "-translate-y-32 rotate-6" : "translate-y-0"}`}><ChefHat className="size-9" /></div><div className="absolute bottom-[5.4rem] flex size-14 items-center justify-center rounded-2xl bg-red-500 text-white shadow-xl" style={{ left: `${obstacleX}%` }}><CookingPot className="size-8" /></div><div className="absolute inset-x-0 top-5 px-4 text-center"><p className="font-black text-brand-navy">Salta antes de tocar los utensilios</p><p className="text-sm text-slate-600">Toca la pista o usa Espacio / Flecha arriba</p></div><button type="button" onPointerDown={jump} className="absolute inset-0" aria-label="Saltar obstáculo" /><button type="button" onClick={jump} className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-brand-navy px-7 py-3 text-sm font-black text-white shadow-lg">Saltar</button></div> : null}
-            {active === "match" ? <div className="mx-auto flex h-full max-w-md flex-col justify-center"><div className="mb-3 rounded-xl bg-white/80 px-4 py-2 text-center text-sm font-bold text-brand-navy shadow-sm">{matchHint}</div><div className="grid grid-cols-6 gap-1.5 rounded-2xl bg-brand-navy/10 p-2.5 shadow-inner sm:gap-2 sm:p-3">{board.map((ingredient, index) => { const item = ingredientTypes[ingredient], Icon = item.icon; return <button key={index} type="button" onClick={() => chooseTile(index)} aria-label={`${selected === index ? "Seleccionado: " : ""}${item.name}`} className={`aspect-square rounded-xl border-2 transition active:scale-90 ${item.style} ${selected === index ? "scale-105 border-brand-navy shadow-lg ring-2 ring-white" : "border-white/60 shadow-sm"}`}><Icon className="mx-auto size-6 sm:size-8" /></button>; })}</div><p className="mt-3 text-center text-xs font-semibold text-slate-500">Intercambia dos casillas vecinas para formar líneas de tres o más.</p></div> : null}
-            {active === "delivery" ? <div className="relative h-full overflow-hidden rounded-2xl border border-blue-200 bg-[linear-gradient(#dff3ff_0_72%,#eed1a3_72%)]"><div className="absolute left-[18%] flex size-14 items-center justify-center rounded-2xl bg-white text-blue-700 shadow-xl" style={{ top: `${deliveryY}%`, transform: "translateY(-50%) rotate(-4deg)" }}><PackageCheck className="size-8" /></div><div className="absolute inset-y-0 w-16 sm:w-20" style={{ left: `${doorX}%` }}><div className="absolute inset-x-0 top-0 rounded-b-xl bg-brand-navy shadow-xl" style={{ height: `${Math.max(0, doorGap - 15)}%` }} /><div className="absolute inset-x-0 bottom-0 rounded-t-xl bg-brand-navy shadow-xl" style={{ height: `${Math.max(0, 100 - doorGap - 15)}%` }} /><div className="absolute left-1/2 size-4 -translate-x-1/2 rounded-full bg-brand-orange" style={{ top: `${doorGap}%`, transform: "translate(-50%, -50%)" }} /></div><div className="absolute inset-x-0 top-5 px-4 text-center"><p className="font-black text-brand-navy">Mantén el pedido en el aire</p><p className="text-sm text-slate-600">Cada toque lo impulsa hacia arriba</p></div><button type="button" onPointerDown={flap} className="absolute inset-0" aria-label="Impulsar pedido hacia arriba" /><div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/85 px-5 py-2 text-sm font-black text-brand-navy shadow">Toca para volar</div></div> : null}
+            {active === "runner" ? <div style={{ backgroundImage: "linear-gradient(rgba(4,18,36,.12),rgba(4,18,36,.25)),url('/game-assets/chef-arcade-worlds.png')", backgroundSize: "300% 100%", backgroundPosition: "left center" }} className="relative h-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-800"><div className="absolute inset-x-0 bottom-16 h-2 bg-orange-400/80" /><div className={`absolute bottom-[4.5rem] left-[16%] flex size-14 items-center justify-center rounded-2xl border-2 border-white/80 bg-white/90 text-brand-navy shadow-2xl transition-transform duration-300 sm:size-16 ${jumping ? "-translate-y-32 rotate-6" : "translate-y-0"}`}><ChefHat className="size-9" /></div><div className="absolute bottom-[4.5rem] flex size-14 items-center justify-center rounded-2xl border-2 border-red-200 bg-red-600/95 text-white shadow-2xl" style={{ left: `${obstacleX}%` }}><CookingPot className="size-8" /></div><div className="absolute inset-x-0 top-5 px-4 text-center text-white drop-shadow-lg"><p className="font-black">Salta antes de tocar los utensilios</p><p className="text-sm text-white/85">Toca la pista o usa Espacio / Flecha arriba</p></div><button type="button" onPointerDown={jump} className="absolute inset-0" aria-label="Saltar obstáculo" /><button type="button" onClick={jump} className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-brand-orange px-8 py-3 text-sm font-black text-white shadow-xl">Saltar</button></div> : null}
+            {active === "match" ? <div style={{ backgroundImage: "url('/game-assets/chef-arcade-worlds.png')", backgroundSize: "300% 100%", backgroundPosition: "center center" }} className="mx-auto flex h-full max-w-md flex-col justify-center rounded-2xl p-3"><div className="mb-3 rounded-xl bg-white/90 px-4 py-2 text-center text-sm font-bold text-brand-navy shadow-sm backdrop-blur-sm">{matchHint}</div><div className="grid grid-cols-6 gap-1.5 rounded-2xl bg-brand-navy/15 p-2.5 shadow-xl backdrop-blur-sm sm:gap-2 sm:p-3">{board.map((ingredient, index) => { const item = ingredientTypes[ingredient], Icon = item.icon; return <button key={index} type="button" onClick={() => chooseTile(index)} aria-label={`${selected === index ? "Seleccionado: " : ""}${item.name}`} className={`aspect-square rounded-xl border-2 transition active:scale-90 ${item.style} ${selected === index ? "scale-105 border-brand-navy shadow-lg ring-2 ring-white" : "border-white/70 shadow-md"}`}><Icon className="mx-auto size-6 sm:size-8" /></button>; })}</div><p className="mt-3 rounded-full bg-white/85 px-3 py-1.5 text-center text-xs font-semibold text-slate-600 shadow-sm">Intercambia dos casillas vecinas para formar líneas de tres o más.</p></div> : null}
+            {active === "delivery" ? <div style={{ backgroundImage: "linear-gradient(rgba(4,18,36,.08),rgba(4,18,36,.18)),url('/game-assets/chef-arcade-worlds.png')", backgroundSize: "300% 100%", backgroundPosition: "right center" }} className="relative h-full overflow-hidden rounded-2xl border border-blue-950 bg-slate-900"><div className="absolute left-[18%] flex size-14 items-center justify-center rounded-2xl border-2 border-orange-200 bg-white/95 text-blue-800 shadow-2xl" style={{ top: `${deliveryY}%`, transform: "translateY(-50%) rotate(-4deg)" }}><PackageCheck className="size-8" /></div><div className="absolute inset-y-0 w-16 sm:w-20" style={{ left: `${doorX}%` }}><div className="absolute inset-x-0 top-0 rounded-b-xl border-x-2 border-b-2 border-orange-300 bg-brand-navy shadow-xl" style={{ height: `${Math.max(0, doorGap - 15)}%` }} /><div className="absolute inset-x-0 bottom-0 rounded-t-xl border-x-2 border-t-2 border-orange-300 bg-brand-navy shadow-xl" style={{ height: `${Math.max(0, 100 - doorGap - 15)}%` }} /><div className="absolute left-1/2 size-4 rounded-full bg-brand-orange" style={{ top: `${doorGap}%`, transform: "translate(-50%, -50%)" }} /></div><div className="absolute inset-x-0 top-5 px-4 text-center text-white drop-shadow-lg"><p className="font-black">Mantén el pedido en el aire</p><p className="text-sm text-white/85">Cada toque lo impulsa hacia arriba</p></div><button type="button" onPointerDown={flap} className="absolute inset-0" aria-label="Impulsar pedido hacia arriba" /><div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-6 py-2.5 text-sm font-black text-brand-navy shadow-xl">Toca para volar</div></div> : null}
+            {!playing && !over ? <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-brand-navy/90 px-8 text-center text-white backdrop-blur-sm"><span className="flex size-20 items-center justify-center rounded-3xl bg-white/10 shadow-xl"><ActiveIcon className="size-10 text-brand-orange" /></span><p className="mt-5 text-2xl font-black">{meta?.title}</p><p className="mt-2 max-w-sm text-sm leading-relaxed text-white/75">{meta?.subtitle}. Tendrás {SECONDS} segundos{active === "match" ? " para crear todos los combos que puedas" : " y tres oportunidades antes de terminar"}.</p><button type="button" onClick={begin} className="mt-7 flex min-h-12 items-center gap-2 rounded-2xl bg-brand-orange px-8 py-3 font-black text-white shadow-xl"><Play className="size-5 fill-current" />Comenzar partida</button></div> : null}
             {over ? <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/95 px-6 text-center backdrop-blur-sm"><span className="flex size-20 items-center justify-center rounded-3xl bg-amber-100 text-amber-600"><Trophy className="size-11" /></span><p className="mt-5 text-sm font-black uppercase tracking-wider text-slate-500">Partida terminada</p><p className="mt-1 text-4xl font-black text-brand-navy">{score} puntos</p><p className="mt-1 text-sm font-bold text-slate-500">Tu récord: {record}</p><div className="mt-6 flex gap-3"><button type="button" onClick={close} className="rounded-xl border px-5 py-3 font-bold text-slate-600">Cerrar</button><button type="button" onClick={() => start(active)} className="flex items-center gap-2 rounded-xl px-5 py-3 font-black text-white" style={{ backgroundColor: primaryColor }}><RotateCcw className="size-4" />Jugar otra vez</button></div></div> : null}
           </div>
         </div>
