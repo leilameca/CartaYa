@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Bell, BellRing, Check, ChefHat, Clock3, Loader2, MoveRight, Volume2 } from "lucide-react";
+import { Bell, BellRing, Check, ChefHat, Clock3, Loader2, MoveRight, TriangleAlert, Volume2 } from "lucide-react";
 import { advanceKitchenOrderAction } from "@/app/dashboard/cocina/actions";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { orderTime, shortOrderId } from "@/lib/order-display";
@@ -63,7 +63,7 @@ function KitchenCard({
         {order.items.map((item) => (
           <div key={item.id} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
             <p className="text-lg font-extrabold leading-6"><span className="mr-2 text-brand-orange">{item.quantity}×</span>{item.name}</p>
-            {item.notes ? <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold leading-5 text-amber-900">⚠ {item.notes}</p> : null}
+            {item.notes ? <p className="mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold leading-5 text-amber-900"><TriangleAlert className="mt-0.5 size-4 shrink-0" />{item.notes}</p> : null}
           </div>
         ))}
         {order.notes ? <div className="rounded-xl bg-brand-navy px-3 py-2 text-sm font-bold text-white">Nota general: {order.notes}</div> : null}

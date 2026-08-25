@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  BellRing,
   Check,
   ChefHat,
   ChevronDown,
@@ -320,7 +321,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
         ))}
       </div>
 
-      {menu.table && menu.restaurant.subscription_tier === "pro" ? <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-8"><div className="flex flex-col gap-4 rounded-3xl border bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><p className="font-black text-brand-navy">¿Necesitas ayuda en la mesa?</p><p className="text-sm text-slate-500">Avisa al equipo; el primer mesero que acepte quedará a cargo de tu mesa.</p>{serviceState.success ? <p className="mt-2 text-sm font-bold text-emerald-600">{serviceState.success}</p> : null}{serviceState.error ? <p className="mt-2 text-sm font-bold text-red-600">{serviceState.error}</p> : null}</div><button onClick={requestWaiter} disabled={serviceState.loading || Boolean(serviceState.success)} className="shrink-0 rounded-xl px-5 py-3 font-black text-white disabled:opacity-60" style={{ backgroundColor: menu.restaurant.secondary_color }}>{serviceState.loading ? "Avisando…" : "🔔 Llamar a un mesero"}</button></div></section> : null}
+      {menu.table && menu.restaurant.subscription_tier === "pro" ? <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-8"><div className="flex flex-col gap-4 rounded-3xl border bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><p className="font-black text-brand-navy">¿Necesitas ayuda en la mesa?</p><p className="text-sm text-slate-500">Avisa al equipo; el primer mesero que acepte quedará a cargo de tu mesa.</p>{serviceState.success ? <p className="mt-2 text-sm font-bold text-emerald-600">{serviceState.success}</p> : null}{serviceState.error ? <p className="mt-2 text-sm font-bold text-red-600">{serviceState.error}</p> : null}</div><button onClick={requestWaiter} disabled={serviceState.loading || Boolean(serviceState.success)} className="flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 font-black text-white disabled:opacity-60" style={{ backgroundColor: menu.restaurant.secondary_color }}><BellRing className="size-5" />{serviceState.loading ? "Avisando…" : "Llamar a un mesero"}</button></div></section> : null}
 
       <KitchenMiniGames primaryColor={primaryColor} />
 
