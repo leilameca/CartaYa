@@ -78,7 +78,7 @@ const spriteCells: Record<CookingGameId, Record<string, [number, number]>> = {
 function FoodPiece({ game, id, small = false, plate = false, className = "" }: { game: CookingGameId; id: string; small?: boolean; plate?: boolean; className?: string }) {
   const cell = spriteCells[game][id] ?? [0, 0];
   const base = id === "tortilla" || id === "masa" || id === "taza";
-  const size = small ? "size-7" : plate ? (base ? "size-36 sm:size-44" : "size-24 sm:size-28") : "size-14 sm:size-16";
+  const size = small ? "size-4 min-[390px]:size-5 sm:size-7" : plate ? (base ? "size-32 min-[390px]:size-36 sm:size-44" : "size-20 min-[390px]:size-24 sm:size-28") : "size-11 min-[390px]:size-12 sm:size-16";
   return <span className={`block shrink-0 bg-no-repeat drop-shadow-md ${size} ${className}`} style={{ backgroundImage: `url('/game-assets/${game}-real-sprites.png')`, backgroundSize: "300% 200%", backgroundPosition: `${cell[0] * 50}% ${cell[1] * 100}%` }} />;
 }
 
@@ -102,8 +102,8 @@ function meatState(startedAt: number, now: number): MeatState {
 
 export function CookingRushGame({ game, onUpdate, onFinish }: { game: CookingGameId; onUpdate: (snapshot: CookingSnapshot) => void; onFinish: (result: CookingResult) => void }) {
   const config = configs[game];
-  const uidRef = useRef(3);
-  const [orders, setOrders] = useState<Order[]>(() => config.recipes.map((recipe, index) => ({ uid: index + 1, recipeId: recipe.id, progress: 0, patience: 100, processEnd: null })));
+  const uidRef = useRef(2);
+  const [orders, setOrders] = useState<Order[]>(() => config.recipes.slice(0, 2).map((recipe, index) => ({ uid: index + 1, recipeId: recipe.id, progress: 0, patience: 100, processEnd: null })));
   const [activeUid, setActiveUid] = useState(1);
   const [score, setScore] = useState(0);
   const [served, setServed] = useState(0);
@@ -156,7 +156,7 @@ export function CookingRushGame({ game, onUpdate, onFinish }: { game: CookingGam
           return { ...order, patience: order.patience - 0.48, progress: done ? Math.min(recipe.steps.length, order.progress + 1) : order.progress, processEnd: done ? null : order.processEnd };
         });
         const surviving = updated.filter((order) => { const keep = order.patience > 0; if (!keep) expired = true; return keep; });
-        while (surviving.length < 3) surviving.push(createOrder());
+        while (surviving.length < 2) surviving.push(createOrder());
         if (!surviving.some((order) => order.uid === activeUid)) setActiveUid(surviving[0].uid);
         if (expired) {
           const alive = new Set(surviving.map((order) => order.uid));
@@ -207,8 +207,10 @@ export function CookingRushGame({ game, onUpdate, onFinish }: { game: CookingGam
       setFeedback(`${station.label} encendida; toca otro cliente mientras termina`);
     } else {
       const nextProgress = activeOrder.progress + 1;
-      setOrders((current) => current.map((order) => order.uid === activeOrder.uid ? { ...order, progress: nextProgress } : order));
-      setFeedback(nextProgress === activeRecipe.steps.length ? "Plato terminado: llévalo al cliente" : "Ingrediente colocado en la mesa");
+      const goesStraightToOven = game === "pizza" && activeRecipe.steps[nextProgress] === "horno";
+      setOrders((current) => current.map((order) => order.uid === activeOrder.uid ? { ...order, progress: nextProgress, processEnd: goesStraightToOven ? now + (stationMap.get("horno")?.processMs ?? 3800) : null } : order));
+      setFeedback(goesStraightToOven ? "Pizza dentro del horno; prepara la otra comanda" : nextProgress === activeRecipe.steps.length ? "Plato terminado: llévalo al cliente" : "Ingrediente colocado en la mesa");
+      if (goesStraightToOven) playSound("sizzle");
       if (["lechuga", "tomate", "vegetales"].includes(station.id)) playSound("chop");
     }
   }
@@ -253,37 +255,38 @@ export function CookingRushGame({ game, onUpdate, onFinish }: { game: CookingGam
 
   const placedSteps = activeRecipe?.steps.slice(0, activeOrder?.progress ?? 0).filter((step) => !stationMap.get(step)?.processMs && !(game === "taco" && step === "carne" && (activeOrder?.progress ?? 0) <= 2)) ?? [];
 
-  return <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#182536]">
-    <div className="relative mx-auto flex min-h-[560px] w-full max-w-6xl flex-1 flex-col overflow-hidden bg-[url('/game-assets/cooking-counter-stage.png')] bg-cover bg-center sm:aspect-[16/9] sm:min-h-[620px]">
+  return <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#182536]">
+    <div className="cartaya-game-board relative mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-hidden bg-[url('/game-assets/cooking-counter-stage.png')] bg-cover bg-center">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/5 via-transparent to-slate-950/35" />
-      <section className="relative z-10 grid shrink-0 grid-cols-3 gap-2 px-2 pt-2 sm:gap-4 sm:px-8 sm:pt-4" aria-label="Clientes esperando">
+      <section className="cartaya-game-customers relative z-10 mx-auto grid w-full max-w-3xl shrink-0 grid-cols-2 gap-2 px-2 pt-1.5 sm:gap-5 sm:px-8 sm:pt-4" aria-label="Clientes esperando">
         {orders.map((order, index) => {
           const recipe = recipeMap.get(order.recipeId)!; const selected = order.uid === activeUid; const ready = order.progress >= recipe.steps.length && !order.processEnd;
-          return <button key={order.uid} type="button" onClick={() => setActiveUid(order.uid)} className={`relative min-w-0 rounded-2xl border-2 bg-white/95 p-2 text-left shadow-xl backdrop-blur transition active:scale-95 sm:p-3 ${selected ? "border-orange-500 ring-4 ring-orange-400/35" : "border-white/60"}`}>
+          return <button key={order.uid} type="button" onClick={() => setActiveUid(order.uid)} className={`relative min-w-0 rounded-xl border-2 bg-white/95 p-1.5 text-left shadow-xl backdrop-blur transition active:scale-95 sm:rounded-2xl sm:p-3 ${selected ? "border-orange-500 ring-2 ring-orange-400/35 sm:ring-4" : "border-white/60"}`}>
             <span className={`absolute -bottom-3 left-1/2 size-4 -translate-x-1/2 rotate-45 border-b-2 border-r-2 bg-white ${selected ? "border-orange-500" : "border-white"}`} />
-            <div className="flex items-center gap-1.5"><CustomerFace patience={order.patience} ready={ready} /><div className="flex min-w-0 flex-1 items-center justify-center gap-0.5 rounded-xl bg-amber-50 px-1 py-1 sm:gap-1">{recipe.steps.filter((step) => !stationMap.get(step)?.processMs).map((step, stepIndex) => <FoodPiece key={`${step}-${stepIndex}`} game={game} id={step} small />)}</div></div>
+            <div className="flex items-center gap-1"><CustomerFace patience={order.patience} ready={ready} /><div className="flex min-w-0 flex-1 items-center justify-center -space-x-1 rounded-xl bg-amber-50 px-0.5 py-1 sm:space-x-0 sm:gap-1 sm:px-1">{recipe.steps.filter((step) => !stationMap.get(step)?.processMs).map((step, stepIndex) => <FoodPiece key={`${step}-${stepIndex}`} game={game} id={step} small />)}</div></div>
             <span className="sr-only">Cliente {index + 1}: {recipe.name}</span>
-            <span className={`mt-1 block text-center text-[9px] font-black uppercase ${order.patience > 60 ? "text-emerald-700" : order.patience > 30 ? "text-amber-700" : "text-red-700"}`}>{ready ? "Listo" : order.patience > 60 ? "Contento" : order.patience > 30 ? "Esperando" : "Impaciente"}</span>
+            <span className={`mt-0.5 block truncate text-center text-[8px] font-black uppercase sm:mt-1 sm:text-[9px] ${order.patience > 60 ? "text-emerald-700" : order.patience > 30 ? "text-amber-700" : "text-red-700"}`}>{ready ? "Listo" : order.patience > 60 ? "Contento" : order.patience > 30 ? "Esperando" : "Impaciente"}</span>
           </button>;
         })}
       </section>
 
-      <section className="relative z-10 mt-8 px-2 sm:mt-14 sm:px-8" aria-label="Estante de ingredientes">
-        <div className={`mx-auto grid max-w-4xl gap-1.5 rounded-3xl border-4 border-amber-950/45 bg-amber-900/75 p-2 shadow-2xl backdrop-blur-sm ${config.stations.length > 6 ? "grid-cols-4 sm:grid-cols-7" : "grid-cols-3 sm:grid-cols-6"}`}>
+      <section className="cartaya-game-pantry relative z-10 mt-4 px-1.5 sm:mt-8 sm:px-8" aria-label="Estante de ingredientes">
+        <div className={`mx-auto grid max-w-4xl gap-1 rounded-2xl border-2 border-amber-950/45 bg-amber-900/75 p-1.5 shadow-2xl backdrop-blur-sm sm:gap-1.5 sm:rounded-3xl sm:border-4 sm:p-2 ${config.stations.length > 6 ? "grid-cols-4 sm:grid-cols-7" : "grid-cols-3 sm:grid-cols-6"}`}>
           {config.stations.map((station) => {
             const Icon = station.icon; const expected = station.id === expectedStep; const occupied = Boolean(station.processMs && busyStations.has(station.id) && !activeOrder?.processEnd);
-            return <button key={station.id} type="button" onClick={() => handleStation(station)} disabled={Boolean(activeOrder?.processEnd)} aria-label={station.label} aria-disabled={occupied} className={`relative flex min-h-16 flex-col items-center justify-center rounded-[45%_45%_30%_30%] border-2 bg-gradient-to-br p-1 shadow-lg transition active:scale-90 sm:min-h-20 ${station.tone} ${expected ? "border-white ring-4 ring-orange-400 animate-pulse" : "border-white/25"} disabled:opacity-50`}>
+            const automaticOven = game === "pizza" && station.id === "horno";
+            return <button key={station.id} type="button" onClick={() => handleStation(station)} disabled={Boolean(activeOrder?.processEnd) || automaticOven} aria-label={automaticOven ? "Horno automático" : station.label} aria-disabled={occupied || automaticOven} className={`relative flex min-h-14 flex-col items-center justify-center rounded-[42%_42%_26%_26%] border-2 bg-gradient-to-br p-0.5 shadow-lg transition active:scale-90 sm:min-h-20 sm:p-1 ${station.tone} ${expected && !automaticOven ? "border-white ring-2 ring-orange-400 animate-pulse sm:ring-4" : "border-white/25"} disabled:opacity-70`}>
               {game === "cafe" && station.id === "cafetera" ? <Icon className="size-7 text-white drop-shadow sm:size-9" /> : <FoodPiece game={game} id={station.id} />}
-              <span className="mt-0.5 rounded-full bg-slate-950/65 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white sm:text-[10px]">{occupied ? "Ocupada" : station.label}</span>
+              <span className="mt-0.5 max-w-full truncate rounded-full bg-slate-950/65 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-white sm:px-2 sm:text-[10px]">{automaticOven ? "Automático" : occupied ? "Ocupada" : station.label}</span>
             </button>;
           })}
         </div>
-        {game === "taco" ? <div className="mx-auto mt-2 grid max-w-md grid-cols-2 gap-2" aria-label="Espacios de cocción">
+        {game === "taco" ? <div className="mx-auto mt-1.5 grid max-w-md grid-cols-2 gap-1.5 sm:mt-2 sm:gap-2" aria-label="Espacios de cocción">
           {grillSlots.map((slot, index) => {
             const state = slot ? meatState(slot.startedAt, now) : null;
             const labels: Record<MeatState, string> = { raw: "Cruda", cooking: "Cocinando", ready: "Lista", burned: "Quemada" };
-            return <div key={index} className={`relative overflow-hidden rounded-2xl border-2 p-1.5 shadow-xl ${state === "ready" ? "border-emerald-400 bg-emerald-950" : state === "burned" ? "border-red-500 bg-black" : "border-slate-500 bg-slate-900"}`}>
-              <button type="button" onClick={() => handleGrillSlot(index)} className="relative flex h-16 w-full items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(ellipse,#4b5563,#111827)] active:scale-95" aria-label={state ? `Carne ${labels[state]}` : "Espacio de plancha vacío"}>
+            return <div key={index} className={`relative overflow-hidden rounded-xl border-2 p-1 shadow-xl sm:rounded-2xl sm:p-1.5 ${state === "ready" ? "border-emerald-400 bg-emerald-950" : state === "burned" ? "border-red-500 bg-black" : "border-slate-500 bg-slate-900"}`}>
+              <button type="button" onClick={() => handleGrillSlot(index)} className="relative flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-[radial-gradient(ellipse,#4b5563,#111827)] active:scale-95 sm:h-16 sm:rounded-xl" aria-label={state ? `Carne ${labels[state]}` : "Espacio de plancha vacío"}>
                 {slot && state ? <MeatCookingPiece state={state} /> : <span className="h-1 w-14 rounded-full bg-white/15" />}
                 {state === "raw" || state === "cooking" ? <span className="cartaya-grill-smoke"><i /><i /><i /></span> : null}
                 {state ? <span className={`absolute bottom-1 left-2 rounded-full px-2 py-0.5 text-[9px] font-black uppercase text-white ${state === "ready" ? "bg-emerald-600" : state === "burned" ? "bg-red-700" : "bg-slate-950/75"}`}>{labels[state]}</span> : null}
@@ -294,19 +297,19 @@ export function CookingRushGame({ game, onUpdate, onFinish }: { game: CookingGam
         </div> : null}
       </section>
 
-      <section className="relative z-10 flex flex-1 items-end justify-center px-3 pb-4 pt-6 sm:px-10 sm:pb-7" aria-label="Mesa de preparación">
-        <div className="relative flex h-48 w-full max-w-3xl items-center justify-center sm:h-60">
-          <button type="button" onClick={restartPreparation} className="absolute left-3 top-3 flex size-10 items-center justify-center rounded-full bg-slate-900/75 text-white shadow" aria-label="Descartar preparación"><Trash2 className="size-4" /></button>
-          <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-brand-navy/90 px-3 py-1.5 text-xs font-black text-white"><Timer className="size-3.5" />{time}s</div>
-          <div className="relative flex h-40 w-72 items-center justify-center sm:h-48 sm:w-80">
+      <section className="cartaya-game-prep relative z-10 flex min-h-0 items-center justify-center px-2 py-1 sm:px-10 sm:py-3" aria-label="Mesa de preparación">
+        <div className="relative flex h-full min-h-32 w-full max-w-3xl items-center justify-center sm:min-h-48">
+          <button type="button" onClick={restartPreparation} className="absolute left-1 top-1 flex size-9 items-center justify-center rounded-full bg-slate-900/80 text-white shadow sm:left-3 sm:top-3 sm:size-10" aria-label="Descartar preparación"><Trash2 className="size-4" /></button>
+          <div className="absolute right-1 top-1 flex items-center gap-1 rounded-full bg-brand-navy/90 px-2.5 py-1 text-[11px] font-black text-white sm:right-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-xs"><Timer className="size-3.5" />{time}s</div>
+          <div className="relative flex h-32 w-60 items-center justify-center min-[390px]:h-36 min-[390px]:w-72 sm:h-48 sm:w-80">
             {placedSteps.length === 0 ? <ChefHat className="size-12 text-slate-300" /> : placedSteps.map((step, index) => <span key={`${activeOrder?.uid}-${step}-${index}`} className="cartaya-food-drop absolute inset-0 flex items-center justify-center" style={{ zIndex: index + 1 }}><FoodPiece game={game} id={step} plate className={game === "taco" && step === "tortilla" ? "scale-x-110" : game === "taco" && step === "salsa" ? "rotate-6 scale-75" : ""} /></span>)}
             {activeOrder?.processEnd ? <span className="absolute inset-4 flex flex-col items-center justify-center rounded-[50%] bg-slate-950/65 text-white backdrop-blur-sm"><Flame className="size-9 animate-bounce text-orange-400" /><strong className="mt-1 text-xl tabular-nums">{Math.max(0, (activeOrder.processEnd - now) / 1000).toFixed(1)}s</strong></span> : null}
           </div>
-          <button type="button" onClick={serveOrder} disabled={!activeRecipe || !activeOrder || activeOrder.progress < activeRecipe.steps.length || Boolean(activeOrder.processEnd)} className="absolute bottom-3 right-3 flex min-h-11 items-center gap-2 rounded-2xl bg-emerald-600 px-4 text-sm font-black text-white shadow-xl transition active:scale-95 disabled:translate-y-2 disabled:bg-slate-400 disabled:opacity-55 sm:px-6"><ChefHat className="size-5" />{config.serviceLabel}</button>
+          <button type="button" onClick={serveOrder} disabled={!activeRecipe || !activeOrder || activeOrder.progress < activeRecipe.steps.length || Boolean(activeOrder.processEnd)} className="absolute bottom-1 right-1 flex min-h-10 items-center gap-1.5 rounded-xl bg-emerald-600 px-3 text-xs font-black text-white shadow-xl transition active:scale-95 disabled:translate-y-1 disabled:bg-slate-400 disabled:opacity-55 sm:bottom-3 sm:right-3 sm:min-h-11 sm:rounded-2xl sm:px-6 sm:text-sm"><ChefHat className="size-4 sm:size-5" />{config.serviceLabel}</button>
         </div>
       </section>
-      <div role="status" className="relative z-10 mx-auto mb-2 max-w-[92%] rounded-full bg-slate-950/80 px-4 py-2 text-center text-xs font-bold text-white shadow-lg sm:text-sm">{feedback}</div>
+      <div role="status" className="cartaya-game-feedback relative z-20 mx-auto mb-1 max-w-[94%] truncate rounded-full bg-slate-950/85 px-3 py-1.5 text-center text-[10px] font-bold text-white shadow-lg sm:mb-2 sm:px-4 sm:py-2 sm:text-sm">{feedback}</div>
     </div>
-    <footer className="relative z-20 grid shrink-0 grid-cols-3 bg-brand-navy px-3 py-2 text-center text-white"><div><p className="text-[9px] font-bold uppercase text-white/50">Puntos</p><p className="font-black tabular-nums">{score}</p></div><div><p className="text-[9px] font-bold uppercase text-white/50">Servidos</p><p className="font-black">{served}/{TARGET_SERVICES}</p></div><div><p className="text-[9px] font-bold uppercase text-white/50">Combo</p><p className="font-black">x{combo}</p></div></footer>
+    <footer className="cartaya-game-footer relative z-20 grid shrink-0 grid-cols-3 bg-brand-navy px-3 py-1 text-center text-white sm:py-2"><div><p className="text-[8px] font-bold uppercase text-white/50 sm:text-[9px]">Puntos</p><p className="text-sm font-black tabular-nums sm:text-base">{score}</p></div><div><p className="text-[8px] font-bold uppercase text-white/50 sm:text-[9px]">Servidos</p><p className="text-sm font-black sm:text-base">{served}/{TARGET_SERVICES}</p></div><div><p className="text-[8px] font-bold uppercase text-white/50 sm:text-[9px]">Combo</p><p className="text-sm font-black sm:text-base">x{combo}</p></div></footer>
   </div>;
 }

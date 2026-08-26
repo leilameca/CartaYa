@@ -110,6 +110,63 @@
 .cartaya-grill-smoke i:nth-child(3) { left: 63%; animation-delay: 0.7s; }
 @keyframes cartaya-smoke { from { opacity: 0; transform: translateY(8px) scale(.65); } 35% { opacity: .75; } to { opacity: 0; transform: translateY(-18px) scale(1.4); } }
 
+.cartaya-game-board {
+  display: grid;
+  grid-template-rows: auto auto minmax(8rem, 1fr) auto;
+  touch-action: manipulation;
+}
+
+.cartaya-game-footer {
+  padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+}
+
+.cartaya-game-header {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .cartaya-game-board {
+    grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .cartaya-game-customers {
+    grid-column: 1 / -1;
+  }
+
+  .cartaya-game-pantry {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: center;
+    margin-top: 0;
+    padding-inline: 0.4rem;
+  }
+
+  .cartaya-game-prep {
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 0;
+    padding: 0.25rem;
+  }
+
+  .cartaya-game-feedback {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+
+@media (max-width: 360px) {
+  .cartaya-customer-face {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .cartaya-customer-face i { top: 0.55rem; }
+  .cartaya-customer-face i:first-child { left: 0.42rem; }
+  .cartaya-customer-face i:nth-child(2) { right: 0.42rem; }
+  .cartaya-customer-face b { top: 1.05rem; width: 0.68rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cartaya-food-drop { animation: none; }
   .cartaya-customer-angry,
