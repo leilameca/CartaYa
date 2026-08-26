@@ -53,6 +53,65 @@
   animation: cartaya-food-drop 320ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
+.cartaya-customer-face {
+  position: relative;
+  display: block;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: none;
+  border: 2px solid rgb(180 83 9);
+  border-radius: 9999px;
+  background: radial-gradient(circle at 38% 28%, #fff5d6, #f5b96b);
+  box-shadow: inset 0 -3px 0 rgb(180 83 9 / 20%), 0 2px 6px rgb(15 23 42 / 25%);
+}
+
+.cartaya-customer-face i {
+  position: absolute;
+  top: 0.72rem;
+  width: 0.3rem;
+  height: 0.36rem;
+  border-radius: 9999px;
+  background: #172033;
+}
+
+.cartaya-customer-face i:first-child { left: 0.55rem; }
+.cartaya-customer-face i:nth-child(2) { right: 0.55rem; }
+.cartaya-customer-face b {
+  position: absolute;
+  left: 50%;
+  top: 1.35rem;
+  width: 0.82rem;
+  height: 0.42rem;
+  translate: -50% 0;
+  border: 2px solid #7f1d1d;
+}
+.cartaya-customer-happy b { border-left-color: transparent; border-right-color: transparent; border-top-color: transparent; border-radius: 0 0 9999px 9999px; }
+.cartaya-customer-waiting b { height: 0; border-width: 0 0 2px; }
+.cartaya-customer-angry { background: radial-gradient(circle at 38% 28%, #fee2e2, #f87171); animation: cartaya-customer-angry 0.45s ease-in-out infinite alternate; }
+.cartaya-customer-angry i { height: 0.18rem; border-radius: 0; transform: rotate(14deg); }
+.cartaya-customer-angry i:nth-child(2) { transform: rotate(-14deg); }
+.cartaya-customer-angry b { border-left-color: transparent; border-right-color: transparent; border-bottom-color: transparent; border-radius: 9999px 9999px 0 0; }
+
+@keyframes cartaya-customer-angry { to { transform: translateX(2px); } }
+
+.cartaya-grill-smoke { position: absolute; inset: 0; pointer-events: none; }
+.cartaya-grill-smoke i {
+  position: absolute;
+  bottom: 58%;
+  width: 0.55rem;
+  height: 1.4rem;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 55%);
+  filter: blur(2px);
+  animation: cartaya-smoke 1.25s ease-out infinite;
+}
+.cartaya-grill-smoke i:first-child { left: 35%; }
+.cartaya-grill-smoke i:nth-child(2) { left: 50%; animation-delay: 0.35s; }
+.cartaya-grill-smoke i:nth-child(3) { left: 63%; animation-delay: 0.7s; }
+@keyframes cartaya-smoke { from { opacity: 0; transform: translateY(8px) scale(.65); } 35% { opacity: .75; } to { opacity: 0; transform: translateY(-18px) scale(1.4); } }
+
 @media (prefers-reduced-motion: reduce) {
   .cartaya-food-drop { animation: none; }
+  .cartaya-customer-angry,
+  .cartaya-grill-smoke i { animation: none; }
 }
