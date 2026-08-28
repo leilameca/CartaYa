@@ -27,8 +27,8 @@ export const metadata: Metadata = {
 
 const plans = [
   { name: "Gratis", price: "RD$ 0", description: "Publica tu primer menú", features: ["Hasta 20 platos", "QR general", "Menú PWA"] },
-  { name: "Plus", price: "RD$ 999", description: "Recibe pedidos por mesa", features: ["Platos ilimitados", "QR por mesa", "Historial y personalización"] },
-  { name: "Pro", price: "RD$ 1,999", description: "Coordina toda la operación", features: ["Cocina en vivo", "Meseros y roles", "Alertas operativas"] },
+  { name: "Plus", price: "RD$ 700", description: "Recibe pedidos por mesa", features: ["Platos ilimitados", "QR por mesa", "Historial y personalización"] },
+  { name: "Pro", price: "RD$ 1,200", description: "Coordina toda la operación", features: ["Cocina en vivo", "Meseros y roles", "Alertas operativas"] },
 ];
 
 export default function HomePage() {
