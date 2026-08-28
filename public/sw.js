@@ -1,4 +1,4 @@
-const CACHE_NAME = "cartaya-menu-v2";
+const CACHE_NAME = "cartaya-menu-v3";
 const APP_SHELL = ["/offline", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -49,14 +49,21 @@ self.addEventListener("push", (event) => {
     if (event.data) payload = { ...payload, ...event.data.json() };
   } catch {}
 
-  const show = self.registration.showNotification(payload.title, {
-      body: payload.body,
+  const declared = payload.notification || {};
+  const title = declared.title || payload.title || "CartaYa";
+  const body = declared.body || payload.body || "Tienes una actualización nueva.";
+  const targetUrl = declared.navigate || payload.url || "/dashboard";
+
+  const show = self.registration.showNotification(title, {
+      body,
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
-      tag: payload.tag || "cartaya-update",
+      tag: declared.tag || payload.tag || "cartaya-update",
       renotify: true,
+      silent: false,
       vibrate: [200, 100, 200],
-      data: { url: payload.url },
+      timestamp: Date.now(),
+      data: { url: targetUrl },
     });
   const badge = typeof self.navigator?.setAppBadge === "function" ? self.navigator.setAppBadge(1) : Promise.resolve();
   event.waitUntil(Promise.all([show, badge]));

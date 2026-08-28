@@ -2,6 +2,7 @@ import "server-only";
 
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSiteUrl } from "@/lib/site-url";
 
 const vapidSubject = process.env.VAPID_SUBJECT;
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -56,11 +57,23 @@ export async function sendRestaurantPush({
     .in("user_id", userIds);
   if (subscriptionsError || !subscriptions?.length) return { sent: 0, skipped: false };
 
-  const payload = JSON.stringify({ title, body, url, tag });
+  const navigate = new URL(url, getSiteUrl()).toString();
+  const payload = JSON.stringify({
+    web_push: 8030,
+    notification: { title, body, navigate, silent: false, app_badge: "1", tag },
+    title,
+    body,
+    url: navigate,
+    tag,
+  });
   let sent = 0;
   await Promise.all(subscriptions.map(async (subscription) => {
     try {
-      await webpush.sendNotification({ endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } }, payload);
+      await webpush.sendNotification(
+        { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
+        payload,
+        { TTL: 300, urgency: "high" },
+      );
       sent += 1;
     } catch (error) {
       const statusCode = typeof error === "object" && error !== null && "statusCode" in error ? error.statusCode : undefined;

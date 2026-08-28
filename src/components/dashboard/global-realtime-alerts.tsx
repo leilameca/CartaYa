@@ -1,19 +1,47 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BellRing, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export function GlobalRealtimeAlerts({ restaurantId, role }: { restaurantId: string; role: string }) {
   const supabase = useMemo(() => createClient(), []);
   const [alert, setAlert] = useState<string | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      const context = audioContext.current ?? new AudioContext();
+      audioContext.current = context;
+      if (context.state === "suspended") void context.resume();
+    };
+
+    window.addEventListener("pointerdown", unlockAudio, { once: true });
+    return () => window.removeEventListener("pointerdown", unlockAudio);
+  }, []);
+
   useEffect(() => {
     if (role === "cocina") return;
     const notify = (message: string) => {
-      setAlert(message); navigator.vibrate?.([250, 100, 350]);
-      const context = new AudioContext(); const oscillator = context.createOscillator(); const gain = context.createGain();
-      oscillator.frequency.value = 740; gain.gain.value = 0.08; oscillator.connect(gain); gain.connect(context.destination); oscillator.start(); oscillator.stop(context.currentTime + 0.22);
-      window.setTimeout(() => void context.close(), 400);
+      setAlert(message);
+      navigator.vibrate?.([250, 100, 350]);
+
+      const context = audioContext.current;
+      if (context?.state === "running") {
+        [0, 0.18, 0.36].forEach((delay, index) => {
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          oscillator.frequency.value = [660, 820, 980][index];
+          gain.gain.setValueAtTime(0.0001, context.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + delay + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + delay + 0.15);
+          oscillator.connect(gain);
+          gain.connect(context.destination);
+          oscillator.start(context.currentTime + delay);
+          oscillator.stop(context.currentTime + delay + 0.16);
+        });
+      }
+
       window.setTimeout(() => setAlert(null), 6000);
     };
     const channel = supabase.channel(`global-alerts-${restaurantId}`)
