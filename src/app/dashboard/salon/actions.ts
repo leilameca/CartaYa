@@ -22,7 +22,7 @@ export async function claimServiceRequestAction(requestId: string) {
   const context = await waiterContext();
   if (!context) return { error: "No tienes permiso para aceptar solicitudes." };
   const { data, error } = await context.supabase.rpc("claim_table_service_request", { p_request_id: requestId });
-  if (error) return { error: error.message };
+  if (error) return { error: "No se pudo aceptar la solicitud. Inténtalo nuevamente." };
   const result = data as { claimed?: boolean } | null;
   revalidatePath("/dashboard/salon");
   return result?.claimed ? { success: "Mesa asignada. Serás su mesero durante esta visita." } : { error: "Otro mesero ya aceptó esta solicitud." };
@@ -55,7 +55,7 @@ export async function createWaiterOrderAction(input: unknown) {
     if (sessionError) return { error: "Otro mesero acaba de tomar esta mesa." };
   }
   const { data, error } = await admin.rpc("create_public_order_with_customer", { p_slug: context.restaurant.slug, p_table_id: table.id, p_items: parsed.data.items, p_notes: parsed.data.notes || null, p_customer_name: parsed.data.customerName });
-  if (error || !data) return { error: error?.message ?? "No se pudo crear el pedido." };
+  if (error || !data) return { error: "No se pudo crear el pedido." };
   const result = data as PublicOrderResult;
   await admin.from("orders").update({ created_by_waiter_id: context.user.id, assigned_waiter_id: context.user.id }).eq("id", result.order_id).eq("restaurant_id", context.profile.restaurant_id);
   await sendRestaurantPush({ restaurantId: context.profile.restaurant_id, audience: ["owner", "cocina"], title: `Nuevo pedido · Mesa ${table.label}`, body: `${parsed.data.customerName} pidió con asistencia de un mesero.`, url: "/dashboard/cocina", tag: `new-order-${result.order_id}` });

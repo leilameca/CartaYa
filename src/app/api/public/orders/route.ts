@@ -3,6 +3,7 @@ import { z } from "zod";
 import { isRestaurantOpen } from "@/lib/opening-hours";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendRestaurantPush } from "@/lib/push/server";
+import { consumeRateLimit, getClientAddress } from "@/lib/security/rate-limit";
 import type { PublicMenuData, PublicOrderResult } from "@/types/public-menu";
 
 const orderSchema = z.object({
@@ -28,6 +29,19 @@ export async function POST(request: Request) {
   const parsed = orderSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Revisa los platos, cantidades y notas del pedido." }, { status: 400 });
+  }
+
+  const clientAddress = getClientAddress(request.headers);
+  const tableScope = `${clientAddress}:${parsed.data.slug}:${parsed.data.tableId ?? "direct"}`;
+  const [addressAllowed, tableAllowed] = await Promise.all([
+    consumeRateLimit({ scope: "public-orders-address", identifier: clientAddress, maxRequests: 30, windowSeconds: 60 }),
+    consumeRateLimit({ scope: "public-orders-table", identifier: tableScope, maxRequests: 8, windowSeconds: 60 }),
+  ]);
+  if (!addressAllowed || !tableAllowed) {
+    return NextResponse.json(
+      { error: "Se han enviado demasiados pedidos. Espera un momento e inténtalo nuevamente." },
+      { status: 429, headers: { "Retry-After": "60" } },
+    );
   }
 
   const admin = createAdminClient();
@@ -63,7 +77,7 @@ export async function POST(request: Request) {
 
   if (error || !data) {
     return NextResponse.json(
-      { error: error?.message ?? "No se pudo registrar el pedido. Inténtalo nuevamente." },
+      { error: "No se pudo registrar el pedido. Inténtalo nuevamente." },
       { status: 400 },
     );
   }

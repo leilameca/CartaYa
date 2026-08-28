@@ -7,8 +7,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 const usernameSchema = z.string().trim().toLowerCase().min(3).max(30).regex(/^[a-z0-9._-]+$/);
-const memberSchema = z.object({ username: usernameSchema, password: z.string().min(6).max(72), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
-const updateMemberSchema = z.object({ memberId: z.string().uuid(), username: usernameSchema, password: z.string().min(6).max(72).optional().or(z.literal("")), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
+const memberSchema = z.object({ username: usernameSchema, password: z.string().min(8).max(72), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
+const updateMemberSchema = z.object({ memberId: z.string().uuid(), username: usernameSchema, password: z.string().min(8).max(72).optional().or(z.literal("")), fullName: z.string().trim().min(2).max(100), role: z.enum(["mesero", "cocina"]) });
 
 async function getOwnerContext() {
   const supabase = await createClient();
@@ -23,7 +23,7 @@ async function getOwnerContext() {
 }
 
 export async function createTeamMemberAction(formData: FormData) {
-  const parsed = memberSchema.safeParse({ username: formData.get("username"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
+  const parsed = memberSchema.safeParse({ username: formData.get("staffUsername"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
   if (!parsed.success) redirect("/dashboard/equipo?error=formulario");
   const context = await getOwnerContext();
   if ("error" in context) redirect("/dashboard/equipo?error=permisos");
@@ -41,7 +41,7 @@ export async function createTeamMemberAction(formData: FormData) {
 }
 
 export async function updateTeamMemberAction(formData: FormData) {
-  const parsed = updateMemberSchema.safeParse({ memberId: formData.get("memberId"), username: formData.get("username"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
+  const parsed = updateMemberSchema.safeParse({ memberId: formData.get("memberId"), username: formData.get("staffUsername"), password: formData.get("password"), fullName: formData.get("fullName"), role: formData.get("role") });
   if (!parsed.success) redirect("/dashboard/equipo?error=formulario");
   const context = await getOwnerContext();
   if ("error" in context) redirect("/dashboard/equipo?error=permisos");

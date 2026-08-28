@@ -1,12 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { REMEMBER_ME_MAX_AGE, SESSION_MODE_COOKIE } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getSiteUrl } from "@/lib/site-url";
+import { consumeRateLimit, getClientAddress } from "@/lib/security/rate-limit";
+import { getSafeInternalPath } from "@/lib/security/redirect";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -56,8 +58,7 @@ export async function loginAction(_state: ActionState, formData: FormData): Prom
 
   if (error) return { error: "Correo o contraseña incorrectos." };
 
-  const redirectTo = formData.get("redirectTo");
-  redirect(typeof redirectTo === "string" && redirectTo.startsWith("/") ? redirectTo : "/dashboard");
+  redirect(getSafeInternalPath(formData.get("redirectTo")));
 }
 
 const employeeLoginSchema = z.object({
@@ -69,6 +70,21 @@ const employeeLoginSchema = z.object({
 export async function employeeLoginAction(_state: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = employeeLoginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: "Revisa el restaurante, usuario y clave." };
+
+  const requestHeaders = await headers();
+  const clientAddress = getClientAddress(requestHeaders);
+  const [addressAllowed, credentialAllowed] = await Promise.all([
+    consumeRateLimit({ scope: "employee-login-address", identifier: clientAddress, maxRequests: 60, windowSeconds: 600 }),
+    consumeRateLimit({
+      scope: "employee-login-credential",
+      identifier: `${clientAddress}:${parsed.data.restaurant}:${parsed.data.username}`,
+      maxRequests: 8,
+      windowSeconds: 600,
+    }),
+  ]);
+  if (!addressAllowed || !credentialAllowed) {
+    return { error: "Demasiados intentos. Espera unos minutos antes de volver a intentarlo." };
+  }
 
   const admin = createAdminClient();
   const { data: profile } = await admin

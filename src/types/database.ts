@@ -386,6 +386,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_rate_limit: {
+        Args: {
+          p_key_hash: string
+          p_max_requests: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
       can_access_order: { Args: { target_order_id: string }; Returns: boolean }
       can_access_restaurant: {
         Args: { target_restaurant_id: string }
