@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { requireSuperadmin } from "@/lib/auth/superadmin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 const planSchema = z.object({
   restaurantId: z.string().uuid(),
@@ -15,11 +15,7 @@ export async function changeRestaurantPlanAction(formData: FormData) {
   const parsed = planSchema.safeParse({ restaurantId: formData.get("restaurantId"), tier: formData.get("tier") });
   if (!parsed.success) redirect("/admin?error=formulario");
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "superadmin") redirect("/dashboard");
+  await requireSuperadmin();
 
   const admin = createAdminClient();
   const { error } = await admin.from("restaurants").update({ subscription_tier: parsed.data.tier }).eq("id", parsed.data.restaurantId);
@@ -35,11 +31,7 @@ const requestSchema = z.object({ requestId: z.string().uuid(), decision: z.enum(
 export async function reviewPlanRequestAction(formData: FormData) {
   const parsed = requestSchema.safeParse({ requestId: formData.get("requestId"), decision: formData.get("decision") });
   if (!parsed.success) redirect("/admin?error=formulario");
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "superadmin") redirect("/dashboard");
+  const { user } = await requireSuperadmin();
   const admin = createAdminClient();
   const { data: request } = await admin.from("plan_change_requests").select("restaurant_id, requested_tier, status").eq("id", parsed.data.requestId).single();
   if (!request || request.status !== "pending") redirect("/admin?error=solicitud");

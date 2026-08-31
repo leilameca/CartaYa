@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(9);
+select plan(10);
 
 -- Fixed fixtures. The registration trigger ignores these because signup_type is absent.
 insert into auth.users (
@@ -70,6 +70,9 @@ select results_eq(
 reset role;
 set local role authenticated;
 set local "request.jwt.claim.sub" = '30000000-0000-0000-0000-000000000003';
+set local "request.jwt.claims" = '{"sub":"30000000-0000-0000-0000-000000000003","role":"authenticated","aal":"aal1"}';
+select is((select count(*) from public.restaurants), 0::bigint, 'superadmin without MFA cannot read restaurants');
+set local "request.jwt.claims" = '{"sub":"30000000-0000-0000-0000-000000000003","role":"authenticated","aal":"aal2"}';
 select is((select count(*) from public.restaurants), 2::bigint, 'superadmin reads every restaurant');
 select is((select count(*) from public.categories), 3::bigint, 'superadmin reads every category');
 

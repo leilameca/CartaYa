@@ -1,20 +1,15 @@
-import { redirect } from "next/navigation";
 import { BarChart3, Building2, ClipboardCheck, LogOut } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/actions";
 import { changeRestaurantPlanAction, reviewPlanRequestAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { requireSuperadmin } from "@/lib/auth/superadmin";
 
 const planPrices = { gratis: 0, plus: 700, pro: 1200 } as const;
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "superadmin") redirect("/dashboard");
+  await requireSuperadmin();
   const admin = createAdminClient();
   const [{ data: restaurants }, { data: orders }, { data: planRequests }] = await Promise.all([
     admin.from("restaurants").select("id, name, slug, subscription_tier, created_at").order("created_at", { ascending: false }),

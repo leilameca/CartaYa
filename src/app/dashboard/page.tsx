@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -6,11 +7,14 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const admin = createAdminClient();
+  const { data: accountProfile } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (accountProfile?.role === "superadmin") redirect("/admin");
+
   const { data: profile, error } = await supabase.from("profiles").select("restaurants(name)").eq("id", user.id).single();
   if (error || !profile) throw new Error("No se pudo cargar el restaurante asociado a esta cuenta.");
 
   const { data: roleProfile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (roleProfile?.role === "superadmin") redirect("/admin");
   if (roleProfile?.role === "cocina") redirect("/dashboard/cocina");
   if (roleProfile?.role === "mesero") redirect("/dashboard/salon");
 
