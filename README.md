@@ -2,7 +2,7 @@
 
 Fundación técnica del SaaS multi-tenant de menús digitales por QR para restaurantes en República Dominicana.
 
-Producción de esta etapa: [cartaya-seven.vercel.app](https://cartaya-seven.vercel.app)
+Producción: [www.tucartaya.com](https://www.tucartaya.com)
 
 Proyecto Supabase Cloud: `tiyikulmmbdehkpqevfk` (`us-east-1`).
 
@@ -59,7 +59,7 @@ El dueño crea las cuentas de sus empleados directamente con nombre, usuario, cl
    - Site URL: `http://localhost:3000` (producción: tu dominio de Vercel)
    - Redirect URL: `http://localhost:3000/auth/callback`
 
-   El proyecto Cloud enlazado ya incluye también `https://cartaya-seven.vercel.app/auth/callback`.
+   El proyecto Cloud enlazado debe incluir `https://www.tucartaya.com/auth/callback`. El dominio anterior de Vercel se conserva como redirección para mantener funcionales los QR ya impresos.
 
 5. Inicia la aplicación:
 

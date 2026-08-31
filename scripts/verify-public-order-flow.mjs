@@ -17,7 +17,7 @@ const env = loadEnv(".env.local");
 const admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
-const siteUrl = process.env.CARTAYA_TEST_SITE_URL || "https://cartaya-seven.vercel.app";
+const siteUrl = process.env.CARTAYA_TEST_SITE_URL || "https://www.tucartaya.com";
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const slug = `pwa-test-${suffix}`;
 let restaurantId;

@@ -17,9 +17,11 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "https://cartaya-seven.vercel.app"
+site_url = "https://www.tucartaya.com"
 additional_redirect_urls = [
   "http://localhost:3000/auth/callback",
+  "https://www.tucartaya.com/auth/callback",
+  "https://tucartaya.com/auth/callback",
   "https://cartaya-seven.vercel.app/auth/callback",
 ]
 enable_signup = true

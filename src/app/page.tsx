@@ -19,10 +19,12 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { CookieNotice } from "@/components/cookie-notice";
 
 export const metadata: Metadata = {
   title: "CartaYa | Menú digital y operación para restaurantes",
   description: "Crea tu menú digital, recibe pedidos por mesa y organiza salón y cocina desde una plataforma sencilla.",
+  alternates: { canonical: "/" },
 };
 
 const plans = [
@@ -164,12 +166,14 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-slate-200 bg-[#fafaf8]">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_auto_auto] lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_auto_auto_auto] lg:px-8">
           <div><BrandLogo className="w-32" /><p className="mt-4 max-w-sm text-sm leading-6 text-slate-500">Menús digitales y operación sencilla para restaurantes.</p></div>
           <div><p className="text-sm font-black">Producto</p><div className="mt-4 grid gap-3 text-sm font-semibold text-slate-500"><a href="#producto" className="hover:text-brand-orange">Vista general</a><a href="#operacion" className="hover:text-brand-orange">Operación</a><a href="#planes" className="hover:text-brand-orange">Planes</a></div></div>
           <div><p className="text-sm font-black">Tu cuenta</p><div className="mt-4 grid gap-3 text-sm font-semibold text-slate-500"><Link href="/login" className="hover:text-brand-orange">Iniciar sesión</Link><Link href="/registro" className="hover:text-brand-orange">Crear cuenta</Link></div></div>
+          <div><p className="text-sm font-black">Confianza</p><div className="mt-4 grid gap-3 text-sm font-semibold text-slate-500"><Link href="/privacidad" className="hover:text-brand-orange">Privacidad</Link><Link href="/cookies" className="hover:text-brand-orange">Cookies</Link><Link href="/seguridad" className="hover:text-brand-orange">Seguridad</Link><Link href="/terminos" className="hover:text-brand-orange">Términos</Link></div></div>
         </div>
       </footer>
+      <CookieNotice />
     </main>
   );
 }

@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.tucartaya.com"),
   title: "CartaYa",
   manifest: "/manifest.webmanifest",
   icons: {
