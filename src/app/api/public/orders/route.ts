@@ -82,14 +82,17 @@ export async function POST(request: Request) {
     );
   }
 
-  await sendRestaurantPush({
+  const notification = {
     restaurantId: menu.restaurant.id,
-    audience: ["cocina", "owner"],
     title: "Nuevo pedido recibido",
     body: `${parsed.data.customerName || "Cliente"} realizó un pedido${menu.table?.label ? ` en mesa ${menu.table.label}` : ""}.`,
-    url: "/dashboard/cocina",
     tag: `new-order-${(data as PublicOrderResult).order_id}`,
-  });
+  };
+  if (menu.restaurant.subscription_tier === "pro") {
+    await sendRestaurantPush({ ...notification, audience: ["cocina", "owner"], url: "/dashboard/cocina" });
+  } else {
+    await sendRestaurantPush({ ...notification, audience: ["owner"], url: "/dashboard/pedidos" });
+  }
   const orderId = (data as PublicOrderResult).order_id;
   const { data: assigned } = await admin.from("orders").select("assigned_waiter_id").eq("id", orderId).maybeSingle();
   if (assigned?.assigned_waiter_id) await sendRestaurantPush({ restaurantId: menu.restaurant.id, audience: ["mesero"], onlyUserIds: [assigned.assigned_waiter_id], title: `Nuevo pedido de tu mesa${menu.table?.label ? ` ${menu.table.label}` : ""}`, body: `${parsed.data.customerName || "Cliente"} agregó un pedido.`, url: "/dashboard/salon", tag: `assigned-order-${orderId}` });

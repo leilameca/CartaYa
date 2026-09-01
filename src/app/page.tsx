@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieNotice } from "@/components/cookie-notice";
+import { planCatalog, planOrder } from "@/lib/subscriptions";
 
 export const metadata: Metadata = {
   title: "CartaYa | Menú digital y operación para restaurantes",
@@ -27,11 +28,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const plans = [
-  { name: "Gratis", price: "RD$ 0", description: "Publica tu primer menú", features: ["Hasta 20 platos", "QR general", "Menú PWA"] },
-  { name: "Plus", price: "RD$ 700", description: "Recibe pedidos por mesa", features: ["Platos ilimitados", "QR por mesa", "Historial y personalización"] },
-  { name: "Pro", price: "RD$ 1,200", description: "Coordina toda la operación", features: ["Cocina en vivo", "Meseros y roles", "Alertas operativas"] },
-];
+const plans = planOrder.map((id) => ({ id, ...planCatalog[id] }));
 
 export default function HomePage() {
   return (
@@ -152,7 +149,7 @@ export default function HomePage() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-sm font-black uppercase tracking-[0.17em] text-brand-orange">Planes sencillos</p><h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-5xl">Comienza pequeño. Crece sin mudarte.</h2></div><p className="max-w-lg text-lg leading-8 text-slate-600">Tu plan solo cambia después de que envías una solicitud y la aprobamos. Nunca se activa automáticamente.</p></div>
           <div className="mt-14 overflow-hidden rounded-[2rem] border border-slate-200">
             <div className="grid divide-y divide-slate-200 lg:grid-cols-3 lg:divide-x lg:divide-y-0">
-              {plans.map((plan) => <Plan key={plan.name} {...plan} featured={plan.name === "Pro"} />)}
+              {plans.map((plan) => <Plan key={plan.id} {...plan} featured={plan.id === "pro"} />)}
             </div>
           </div>
         </div>
@@ -197,4 +194,4 @@ function MenuDish({ name, price, tone }: { name: string; price: string; tone: st
 function KitchenTicket({ table, status, items, accent }: { table: string; status: string; items: string; accent: "orange" | "green" | "white" }) { const color = accent === "orange" ? "bg-brand-orange" : accent === "green" ? "bg-brand-green" : "bg-white"; return <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] p-3"><span className={`h-10 w-1 rounded-full ${color}`} /><div className="min-w-0 flex-1"><div className="flex justify-between gap-3"><p className="text-sm font-black">{table}</p><p className="text-[10px] font-black uppercase tracking-wider text-slate-300">{status}</p></div><p className="mt-1 truncate text-xs text-slate-400">{items}</p></div></div>; }
 function BrandPreview() { return <div className="rounded-2xl border border-orange-200 bg-white p-4 shadow-xl shadow-orange-900/5"><div className="flex items-center gap-3 border-b pb-3"><span className="flex size-9 items-center justify-center rounded-xl bg-brand-orange text-sm font-black text-white">CM</span><div><p className="text-xs font-black">Casa Mía</p><p className="text-[10px] text-slate-400">Panel interno</p></div></div><div className="mt-4 grid grid-cols-[70px_1fr] gap-3"><div className="space-y-2 rounded-xl bg-brand-navy p-2"><i className="block h-5 rounded bg-white/90" /><i className="block h-5 rounded bg-white/10" /><i className="block h-5 rounded bg-white/10" /></div><div className="space-y-2"><i className="block h-10 rounded-xl bg-orange-100" /><div className="grid grid-cols-2 gap-2"><i className="block h-14 rounded-xl bg-emerald-100" /><i className="block h-14 rounded-xl bg-slate-100" /></div></div></div></div>; }
 function Step({ number, icon, title, description }: { number: string; icon: React.ReactNode; title: string; description: string }) { return <article className="bg-white p-7 sm:p-9"><div className="flex items-center justify-between"><span className="flex size-12 items-center justify-center rounded-2xl bg-brand-orange/10 text-brand-orange">{icon}</span><span className="text-sm font-black text-slate-300">{number}</span></div><h3 className="mt-7 text-xl font-black">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{description}</p></article>; }
-function Plan({ name, price, description, features, featured }: { name: string; price: string; description: string; features: string[]; featured: boolean }) { return <article className={`relative p-7 sm:p-9 ${featured ? "bg-brand-navy text-white" : "bg-white"}`}>{featured ? <span className="absolute right-6 top-6 rounded-full bg-brand-green px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Operación completa</span> : null}<p className={`text-sm font-black uppercase tracking-[0.14em] ${featured ? "text-emerald-400" : "text-brand-green"}`}>{name}</p><p className="mt-5 text-4xl font-black tracking-tight">{price}<span className={`text-sm font-semibold ${featured ? "text-slate-400" : "text-slate-500"}`}> / mes</span></p><p className={`mt-2 text-sm ${featured ? "text-slate-300" : "text-slate-500"}`}>{description}</p><ul className="mt-7 space-y-3">{features.map((feature) => <li key={feature} className="flex items-center gap-3 text-sm font-bold"><Check className={`size-4 ${featured ? "text-emerald-400" : "text-brand-green"}`} />{feature}</li>)}</ul><Link href="/registro" className={`mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-black transition ${featured ? "bg-brand-orange text-white hover:bg-brand-orange/90" : "border border-slate-300 hover:border-brand-navy"}`}>Comenzar con {name}</Link></article>; }
+function Plan({ name, price, description, featuredBenefits, featured }: { name: string; price: number; description: string; featuredBenefits: string[]; featured: boolean }) { return <article className={`relative p-7 sm:p-9 ${featured ? "bg-brand-navy text-white" : "bg-white"}`}>{featured ? <span className="absolute right-6 top-6 rounded-full bg-brand-green px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Operación completa</span> : null}<p className={`text-sm font-black uppercase tracking-[0.14em] ${featured ? "text-emerald-400" : "text-brand-green"}`}>{name}</p><p className="mt-5 text-4xl font-black tracking-tight">RD$ {price.toLocaleString("es-DO")}<span className={`text-sm font-semibold ${featured ? "text-slate-400" : "text-slate-500"}`}> / mes</span></p><p className={`mt-2 min-h-10 text-sm ${featured ? "text-slate-300" : "text-slate-500"}`}>{description}</p><ul className="mt-7 space-y-3">{featuredBenefits.map((feature) => <li key={feature} className="flex items-start gap-3 text-sm font-bold"><Check className={`mt-0.5 size-4 shrink-0 ${featured ? "text-emerald-400" : "text-brand-green"}`} />{feature}</li>)}</ul><Link href="/registro" className={`mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-black transition ${featured ? "bg-brand-orange text-white hover:bg-brand-orange/90" : "border border-slate-300 hover:border-brand-navy"}`}>Comenzar con {name}</Link></article>; }
