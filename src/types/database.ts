@@ -14,6 +14,34 @@ export type Database = {
   }
   public: {
     Tables: {
+      support_attachments: {
+        Row: { byte_size: number; created_at: string; encryption_iv: string; encryption_key: string; id: string; message_id: string | null; mime_type: string; object_key: string; original_name: string; ticket_id: string; uploaded_by: string }
+        Insert: { byte_size: number; created_at?: string; encryption_iv: string; encryption_key: string; id?: string; message_id?: string | null; mime_type: string; object_key: string; original_name: string; ticket_id: string; uploaded_by: string }
+        Update: { byte_size?: number; created_at?: string; encryption_iv?: string; encryption_key?: string; id?: string; message_id?: string | null; mime_type?: string; object_key?: string; original_name?: string; ticket_id?: string; uploaded_by?: string }
+        Relationships: [
+          { foreignKeyName: "support_attachments_message_id_fkey"; columns: ["message_id"]; isOneToOne: false; referencedRelation: "support_messages"; referencedColumns: ["id"] },
+          { foreignKeyName: "support_attachments_ticket_id_fkey"; columns: ["ticket_id"]; isOneToOne: false; referencedRelation: "support_tickets"; referencedColumns: ["id"] },
+          { foreignKeyName: "support_attachments_uploaded_by_fkey"; columns: ["uploaded_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
+      support_messages: {
+        Row: { author_id: string; body: string; created_at: string; id: string; is_internal: boolean; ticket_id: string }
+        Insert: { author_id: string; body: string; created_at?: string; id?: string; is_internal?: boolean; ticket_id: string }
+        Update: { author_id?: string; body?: string; created_at?: string; id?: string; is_internal?: boolean; ticket_id?: string }
+        Relationships: [
+          { foreignKeyName: "support_messages_author_id_fkey"; columns: ["author_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "support_messages_ticket_id_fkey"; columns: ["ticket_id"]; isOneToOne: false; referencedRelation: "support_tickets"; referencedColumns: ["id"] },
+        ]
+      }
+      support_tickets: {
+        Row: { app_version: string | null; category: string; closed_at: string | null; created_at: string; created_by: string; description: string; id: string; impact: string; last_activity_at: string; page_url: string | null; priority: number; resolved_at: string | null; restaurant_id: string; status: string; subject: string; ticket_number: number; updated_at: string; user_agent: string | null }
+        Insert: { app_version?: string | null; category: string; closed_at?: string | null; created_at?: string; created_by: string; description: string; id?: string; impact: string; last_activity_at?: string; page_url?: string | null; priority?: never; resolved_at?: string | null; restaurant_id: string; status?: string; subject: string; ticket_number?: number; updated_at?: string; user_agent?: string | null }
+        Update: { app_version?: string | null; category?: string; closed_at?: string | null; created_at?: string; created_by?: string; description?: string; id?: string; impact?: string; last_activity_at?: string; page_url?: string | null; priority?: never; resolved_at?: string | null; restaurant_id?: string; status?: string; subject?: string; ticket_number?: number; updated_at?: string; user_agent?: string | null }
+        Relationships: [
+          { foreignKeyName: "support_tickets_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "support_tickets_restaurant_id_fkey"; columns: ["restaurant_id"]; isOneToOne: false; referencedRelation: "restaurants"; referencedColumns: ["id"] },
+        ]
+      }
       tutorial_categories: {
         Row: {
           created_at: string

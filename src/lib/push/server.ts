@@ -20,6 +20,34 @@ function configure() {
 
 export type PushAudience = "owner" | "mesero" | "cocina";
 
+async function sendToSubscriptions(subscriptions: { id: string; endpoint: string; p256dh: string; auth: string }[], payload: string) {
+  const admin = createAdminClient();
+  let sent = 0;
+  await Promise.all(subscriptions.map(async (subscription) => {
+    try {
+      await webpush.sendNotification({ endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } }, payload, { TTL: 300, urgency: "high" });
+      sent += 1;
+    } catch (error) {
+      const statusCode = typeof error === "object" && error !== null && "statusCode" in error ? error.statusCode : undefined;
+      if (statusCode === 404 || statusCode === 410) await admin.from("push_subscriptions").delete().eq("id", subscription.id);
+      else console.error("Web Push delivery failed", { subscriptionId: subscription.id, statusCode });
+    }
+  }));
+  return sent;
+}
+
+export async function sendSuperadminPush({ title, body, url, tag }: { title: string; body: string; url: string; tag: string }) {
+  if (!configure()) return { sent: 0, skipped: true };
+  const admin = createAdminClient();
+  const { data: profiles } = await admin.from("profiles").select("id").eq("role", "superadmin");
+  if (!profiles?.length) return { sent: 0, skipped: false };
+  const { data: subscriptions } = await admin.from("push_subscriptions").select("id, endpoint, p256dh, auth").in("user_id", profiles.map((profile) => profile.id));
+  if (!subscriptions?.length) return { sent: 0, skipped: false };
+  const navigate = new URL(url, getSiteUrl()).toString();
+  const payload = JSON.stringify({ web_push: 8030, notification: { title, body, navigate, silent: false, app_badge: "1", tag }, title, body, url: navigate, tag });
+  return { sent: await sendToSubscriptions(subscriptions, payload), skipped: false };
+}
+
 export async function sendRestaurantPush({
   restaurantId,
   audience,
@@ -66,21 +94,5 @@ export async function sendRestaurantPush({
     url: navigate,
     tag,
   });
-  let sent = 0;
-  await Promise.all(subscriptions.map(async (subscription) => {
-    try {
-      await webpush.sendNotification(
-        { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
-        payload,
-        { TTL: 300, urgency: "high" },
-      );
-      sent += 1;
-    } catch (error) {
-      const statusCode = typeof error === "object" && error !== null && "statusCode" in error ? error.statusCode : undefined;
-      if (statusCode === 404 || statusCode === 410) await admin.from("push_subscriptions").delete().eq("id", subscription.id);
-      else console.error("Web Push delivery failed", { subscriptionId: subscription.id, statusCode });
-    }
-  }));
-
-  return { sent, skipped: false };
+  return { sent: await sendToSubscriptions(subscriptions, payload), skipped: false };
 }

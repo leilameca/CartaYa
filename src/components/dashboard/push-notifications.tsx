@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Status = "checking" | "hidden" | "prompt";
 
@@ -29,7 +30,7 @@ async function readyServiceWorker() {
   ]);
 }
 
-export function PushNotifications() {
+export function PushNotifications({ className }: { className?: string } = {}) {
   const [status, setStatus] = useState<Status>("checking");
   const [busy, setBusy] = useState(false);
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -114,7 +115,7 @@ export function PushNotifications() {
       variant="ghost"
       onClick={activate}
       disabled={busy}
-      className="w-full justify-start gap-3 text-slate-600"
+      className={cn("w-full justify-start gap-3 text-slate-600", className)}
     >
       {busy ? <Loader2 className="size-4 animate-spin" /> : <Bell className="size-4 text-brand-green" />}
       Activar notificaciones

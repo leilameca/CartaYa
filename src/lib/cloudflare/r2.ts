@@ -1,7 +1,7 @@
 import "server-only";
 
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { randomUUID } from "node:crypto";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { createCipheriv, createDecipheriv, randomBytes, randomUUID } from "node:crypto";
 import { MAX_MENU_IMAGE_BYTES } from "@/lib/menu-images";
 
 const imageExtensions: Record<string, string> = {
@@ -83,6 +83,71 @@ function getR2Client(config: R2Config) {
 
 export function isR2Configured() {
   return Boolean(readR2Config());
+}
+
+export const MAX_SUPPORT_ATTACHMENT_BYTES = 3 * 1024 * 1024;
+
+export async function uploadEncryptedSupportAttachment(file: File, ticketId: string) {
+  const config = readR2Config();
+  if (!config) throw new Error("R2_NOT_CONFIGURED");
+  if (!/^[0-9a-f-]{36}$/i.test(ticketId)) throw new Error("ATTACHMENT_INVALID");
+  if (!(file.type in imageExtensions) || file.type === "image/avif") throw new Error("ATTACHMENT_TYPE_INVALID");
+  if (file.size <= 0 || file.size > MAX_SUPPORT_ATTACHMENT_BYTES) throw new Error("ATTACHMENT_SIZE_INVALID");
+
+  const body = new Uint8Array(await file.arrayBuffer());
+  if (!hasValidImageSignature(body, file.type)) throw new Error("ATTACHMENT_TYPE_INVALID");
+
+  const encryptionKey = randomBytes(32);
+  const encryptionIv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", encryptionKey, encryptionIv);
+  const encrypted = Buffer.concat([cipher.update(body), cipher.final(), cipher.getAuthTag()]);
+  const key = `support/${ticketId}/${randomUUID()}.enc`;
+
+  await getR2Client(config).send(new PutObjectCommand({
+    Bucket: config.bucket,
+    Key: key,
+    Body: encrypted,
+    ContentLength: encrypted.byteLength,
+    ContentType: "application/octet-stream",
+    CacheControl: "private, no-store",
+    Metadata: { ticketId, encrypted: "aes-256-gcm" },
+  }));
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._ -]/g, "_").slice(0, 180) || `captura.${imageExtensions[file.type]}`;
+  return {
+    objectKey: key,
+    encryptionKey: encryptionKey.toString("base64"),
+    encryptionIv: encryptionIv.toString("base64"),
+    originalName: safeName,
+    mimeType: file.type,
+    byteSize: file.size,
+  };
+}
+
+export async function downloadEncryptedSupportAttachment({ objectKey, encryptionKey, encryptionIv }: { objectKey: string; encryptionKey: string; encryptionIv: string }) {
+  const config = readR2Config();
+  if (!config) throw new Error("R2_NOT_CONFIGURED");
+  if (!objectKey.startsWith("support/") || objectKey.includes("..")) throw new Error("ATTACHMENT_INVALID");
+
+  const response = await getR2Client(config).send(new GetObjectCommand({ Bucket: config.bucket, Key: objectKey }));
+  if (!response.Body) throw new Error("ATTACHMENT_NOT_FOUND");
+  const encrypted = Buffer.from(await response.Body.transformToByteArray());
+  if (encrypted.length <= 16) throw new Error("ATTACHMENT_INVALID");
+
+  const key = Buffer.from(encryptionKey, "base64");
+  const iv = Buffer.from(encryptionIv, "base64");
+  if (key.length !== 32 || iv.length !== 12) throw new Error("ATTACHMENT_INVALID");
+  const authTag = encrypted.subarray(encrypted.length - 16);
+  const ciphertext = encrypted.subarray(0, encrypted.length - 16);
+  const decipher = createDecipheriv("aes-256-gcm", key, iv);
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+}
+
+export async function deleteEncryptedSupportAttachment(objectKey: string) {
+  const config = readR2Config();
+  if (!config || !objectKey.startsWith("support/") || objectKey.includes("..")) return;
+  await getR2Client(config).send(new DeleteObjectCommand({ Bucket: config.bucket, Key: objectKey }));
 }
 
 export async function uploadMenuImage(file: File, restaurantId: string) {
