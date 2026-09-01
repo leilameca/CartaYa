@@ -1,4 +1,5 @@
-import { BarChart3, Building2, ClipboardCheck, LogOut } from "lucide-react";
+import Link from "next/link";
+import { BarChart3, BookOpen, Building2, ClipboardCheck, LogOut } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/actions";
 import { changeRestaurantPlanAction, reviewPlanRequestAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <main className="min-h-screen bg-brand-gray px-4 py-8 sm:px-8 lg:px-12">
-      <header className="mx-auto flex max-w-7xl items-center justify-between rounded-2xl bg-brand-navy px-5 py-5 text-white shadow-lg"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-400">CartaYa SaaS</p><h1 className="mt-1 text-2xl font-black">Panel de administración</h1></div><form action={logoutAction}><Button type="submit" variant="ghost" className="gap-2 text-white hover:bg-white/10 hover:text-white"><LogOut className="size-4" />Salir</Button></form></header>
+      <header className="mx-auto flex max-w-7xl flex-col gap-4 rounded-2xl bg-brand-navy px-5 py-5 text-white shadow-lg sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-400">CartaYa SaaS</p><h1 className="mt-1 text-2xl font-black">Panel de administración</h1></div><div className="flex items-center gap-2"><Button asChild variant="ghost" className="gap-2 text-white hover:bg-white/10 hover:text-white"><Link href="/admin/tutoriales"><BookOpen className="size-4" />Tutoriales</Link></Button><form action={logoutAction}><Button type="submit" variant="ghost" className="gap-2 text-white hover:bg-white/10 hover:text-white"><LogOut className="size-4" />Salir</Button></form></div></header>
       {params.success ? <p className="mx-auto mt-5 max-w-7xl rounded-xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">Plan actualizado correctamente.</p> : null}
       {params.error ? <p className="mx-auto mt-5 max-w-7xl rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">No se pudo completar la operación.</p> : null}
       <section className="mx-auto mt-6 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-5"><Stat icon={<Building2 className="size-5" />} label="Restaurantes" value={String(restaurants?.length ?? 0)} /><Stat icon={<BarChart3 className="size-5" />} label="Gratis" value={String(totals.gratis)} /><Stat icon={<BarChart3 className="size-5" />} label="Plus" value={String(totals.plus)} /><Stat icon={<BarChart3 className="size-5" />} label="Pro" value={String(totals.pro)} /><Stat icon={<ClipboardCheck className="size-5" />} label="Pedidos" value={String(orderCount)} /></section>
