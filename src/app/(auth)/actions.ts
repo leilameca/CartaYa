@@ -54,9 +54,15 @@ export async function loginAction(_state: ActionState, formData: FormData): Prom
   });
 
   const supabase = await createClient({ sessionOnly: !rememberMe });
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) return { error: "Correo o contraseña incorrectos." };
+
+  if (data.user) {
+    const admin = createAdminClient();
+    const { data: profile } = await admin.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+    if (profile?.role === "superadmin") redirect("/admin");
+  }
 
   redirect(getSafeInternalPath(formData.get("redirectTo")));
 }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { RestaurantOnboardingForm } from "@/components/auth/restaurant-onboarding-form";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function CompleteRegistrationPage() {
@@ -8,7 +9,9 @@ export default async function CompleteRegistrationPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  const admin = createAdminClient();
+  const { data: profile } = await admin.from("profiles").select("id, role").eq("id", user.id).maybeSingle();
+  if (profile?.role === "superadmin") redirect("/admin");
   if (profile) redirect("/dashboard");
 
   return (

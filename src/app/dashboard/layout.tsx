@@ -6,12 +6,17 @@ import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { GlobalRealtimeAlerts } from "@/components/dashboard/global-realtime-alerts";
 import { PushNotifications } from "@/components/dashboard/push-notifications";
 import { Button } from "@/components/ui/button";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const admin = createAdminClient();
+  const { data: accountProfile } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (accountProfile?.role === "superadmin") redirect("/admin");
 
   const { data: profile } = await supabase.from("profiles").select("restaurant_id, full_name, role, restaurants(name, subscription_tier, internal_primary_color, internal_secondary_color)").eq("id", user.id).maybeSingle();
   if (!profile) redirect("/completar-registro");

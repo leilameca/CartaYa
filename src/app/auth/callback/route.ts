@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSafeInternalPath } from "@/lib/security/redirect";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -13,8 +14,10 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+        const admin = createAdminClient();
+        const { data: profile } = await admin.from("profiles").select("id, role").eq("id", user.id).maybeSingle();
         if (!profile) return NextResponse.redirect(new URL("/completar-registro", url.origin));
+        if (profile.role === "superadmin") return NextResponse.redirect(new URL("/admin", url.origin));
       }
       return NextResponse.redirect(new URL(next, url.origin));
     }
