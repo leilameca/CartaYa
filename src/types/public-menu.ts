@@ -6,6 +6,7 @@ export type PublicMenuItem = {
   name: string;
   description: string | null;
   price: number;
+  offer_price: number | null;
   image_url: string | null;
   tag: "popular" | "nuevo" | null;
   display_order: number;

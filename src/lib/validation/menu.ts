@@ -21,7 +21,19 @@ export const menuItemSchema = z.object({
   name: z.string().trim().min(1, "Escribe el nombre del plato.").max(120),
   description: optionalDescription,
   price: z.coerce.number().finite().min(0, "El precio no puede ser negativo.").max(9999999999.99),
+  isOffer: z.boolean(),
+  offerPrice: z.preprocess(
+    (value) => value === "" || value === null ? null : value,
+    z.coerce.number().finite().min(0, "El precio de oferta no puede ser negativo.").max(9999999999.99).nullable(),
+  ),
   categoryId: categoryIdSchema,
   tag: optionalTag,
   isAvailable: z.boolean(),
+}).superRefine((item, context) => {
+  if (item.isOffer && item.offerPrice === null) {
+    context.addIssue({ code: "custom", path: ["offerPrice"], message: "Escribe el precio de oferta." });
+  }
+  if (item.isOffer && item.offerPrice !== null && item.offerPrice >= item.price) {
+    context.addIssue({ code: "custom", path: ["offerPrice"], message: "El precio de oferta debe ser menor que el precio regular." });
+  }
 });

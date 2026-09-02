@@ -1,188 +1,205 @@
-# Guion para presentar CartaYa en LinkedIn
+# Guion de presentación comercial de CartaYa
 
-Duración recomendada: 4 minutos 30 segundos
+Duración recomendada: 4 minutos
 
-Formato: 16:9, 1080p, grabación de pantalla con cámara opcional
+Formato: 16:9, 1080p, demostración de pantalla con narración
 
-Audiencia: reclutadores, desarrolladores, restaurantes y posibles aliados
+Audiencia: restaurantes, posibles clientes, aliados y profesionales de tecnología
 
-Objetivo: demostrar producto, criterio técnico, aprendizaje y visión comercial
+Objetivo: presentar CartaYa como producto, demostrar su funcionamiento y comunicar claramente el valor de cada plan
 
-## 1. Preparación
+## 1. Preparación de la demostración
 
-- Utiliza un restaurante de demostración, no información de clientes reales.
-- Prepara un menú con seis platos, tres categorías y fotografías consistentes.
-- Crea dos mesas y cuentas de prueba para mesero y cocina.
-- Deja abiertas cuatro sesiones: cliente, propietario, cocina y superadministradora.
-- Activa previamente notificaciones y sonido.
-- Oculta correos, teléfonos personales, identificadores internos y secretos.
-- Graba primero la pantalla y después la voz; así podrás repetir la narración sin rehacer la demostración.
-- Añade subtítulos. Muchas personas consumen LinkedIn sin sonido.
-- Mantén el cursor quieto mientras hablas y amplía únicamente las zonas importantes.
+- Utilizar un restaurante ficticio con identidad visual completa.
+- Preparar seis platos, tres categorías y fotografías consistentes.
+- Crear tres mesas y usuarios de demostración para mesero y cocina.
+- Tener abiertas sesiones separadas de cliente, propietario, mesero, cocina y superadministración.
+- Activar previamente sonido y notificaciones.
+- Evitar mostrar correos, teléfonos personales, identificadores o información real de clientes.
+- Añadir subtítulos para que el video pueda entenderse sin sonido.
 
-## 2. Estructura visual
+## 2. Estructura del video
 
-| Tiempo | Imagen principal | Propósito |
+| Tiempo | Demostración | Mensaje principal |
 | --- | --- | --- |
-| 0:00–0:15 | Tú en cámara y logo | Presentación y gancho |
-| 0:15–0:40 | Landing y planes | Problema y propuesta |
-| 0:40–1:20 | Menú, PWA, QR y personalización | Experiencia del cliente |
-| 1:20–2:00 | Carrito, pedido y WhatsApp | Flujo comercial |
-| 2:00–2:40 | KDS, sonido y push | Operación de cocina |
-| 2:40–3:15 | Mesero y solicitud de mesa | Atención en salón |
-| 3:15–3:45 | Tutoriales, soporte y superadmin | Gestión del SaaS |
-| 3:45–4:15 | Arquitectura y seguridad | Profundidad técnica |
-| 4:15–4:30 | Tú en cámara | Aprendizaje y cierre |
+| 0:00–0:15 | Logo, menú y panel en cortes rápidos | Presentación del producto |
+| 0:15–0:40 | Landing y vista general | Todo el restaurante conectado |
+| 0:40–1:15 | Menú público, PWA y QR | Experiencia del cliente |
+| 1:15–1:50 | Gestión de menú y personalización | Control para el propietario |
+| 1:50–2:25 | Pedido y WhatsApp | Pedido completo desde la mesa |
+| 2:25–2:55 | Cocina y notificaciones | Operación en tiempo real |
+| 2:55–3:25 | Meseros y asistencia | Atención organizada en salón |
+| 3:25–3:45 | Tutoriales, soporte y superadmin | Plataforma administrable |
+| 3:45–4:00 | Planes y llamada a la acción | Cierre comercial |
 
 ## 3. Guion completo
 
-### 0:00–0:15 — Gancho
+### 0:00–0:15 — Apertura
 
-**Imagen:** tú en cámara. Después aparece el logo de CartaYa y una vista rápida del panel.
+**Imagen:** animación breve del logo. Cortes rápidos entre menú móvil, QR, pedido, cocina y mesero aceptando una mesa.
 
 **Narración:**
 
-> Soy Leilany, estudiante de Ingeniería de Software, y durante estas últimas semanas he estado construyendo CartaYa: una plataforma SaaS multiempresa que conecta el menú, los pedidos, los meseros y la cocina de un restaurante en tiempo real.
+> Esto es CartaYa: una plataforma que conecta el menú digital, los pedidos, la cocina y la atención en salón desde un solo lugar.
+
+> Una experiencia sencilla para el cliente y una operación más clara para el restaurante.
 
 **Texto en pantalla:**
 
-`CartaYa · SaaS para restaurantes · tucartaya.com`
+`CartaYa · Menú, pedidos y operación conectados`
 
-### 0:15–0:40 — Problema y solución
+### 0:15–0:40 — Vista general del producto
 
-**Imagen:** landing, sección de operación y comparación de planes.
-
-**Narración:**
-
-> La idea nació de un problema sencillo: muchos restaurantes tienen un menú QR, pero los pedidos, las llamadas de las mesas y la comunicación con cocina siguen ocurriendo en herramientas separadas. CartaYa busca unir todo ese recorrido sin obligar al cliente a descargar una aplicación.
-
-> El producto está organizado en tres niveles. Gratis permite publicar el menú; Plus añade pedidos, QR por mesa y personalización; y Pro coordina cocina, meseros, solicitudes y notificaciones operativas.
-
-### 0:40–1:20 — Menú, PWA y QR
-
-**Imagen:** panel de menú, carga de un plato, menú público móvil, personalización y QR.
+**Imagen:** landing y panel principal en computadora y celular.
 
 **Narración:**
 
-> Desde el panel, el propietario crea categorías y platos, agrega precios, fotografías, etiquetas y disponibilidad. El plan Gratis admite hasta veinte platos, mientras Plus y Pro permiten un menú ilimitado.
+> CartaYa funciona directamente desde el navegador y puede instalarse como una PWA. El cliente no necesita descargar una aplicación para consultar el menú o realizar un pedido.
 
-> Cada restaurante obtiene su propia dirección, identidad visual y PWA instalable. El sistema genera un QR general y, desde Plus, códigos permanentes por mesa que pueden descargarse en PNG, SVG o en un archivo ZIP.
-
-> El cliente abre el menú desde cualquier celular, consulta únicamente los productos disponibles y también puede acceder a minijuegos de cocina mientras espera.
+> Cada restaurante dispone de su propio espacio, identidad visual, menú, códigos QR y panel de administración. La información de cada negocio permanece separada dentro de una arquitectura multiempresa.
 
 **Texto en pantalla:**
 
-`Menú PWA · Marca propia · QR general y por mesa`
+`Una plataforma · Cada restaurante con su propio espacio`
 
-### 1:20–2:00 — Pedido del cliente
+### 0:40–1:15 — Experiencia del cliente
 
-**Imagen:** agregar platos al carrito, colocar nombre y notas, enviar y mostrar confirmación.
+**Imagen:** escaneo del QR, apertura del menú, categorías, platos, búsqueda, juegos e instalación de la PWA.
 
 **Narración:**
 
-> En Plus y Pro, el cliente prepara su pedido, indica cantidades, nombre y notas para cocina. Al enviarlo, CartaYa no confía en los precios del navegador: el servidor vuelve a consultar el menú, valida disponibilidad, horario, mesa y plan, y calcula el total desde la base de datos.
+> El cliente escanea el código QR y accede inmediatamente al menú del restaurante. Puede navegar por categorías, consultar fotografías, precios, descripciones y productos disponibles.
 
-> El pedido queda registrado de forma atómica, aparece en tiempo real dentro del restaurante y se prepara una confirmación por WhatsApp. En Plus, el propietario recibe la notificación y abre su historial de pedidos.
+> El diseño se adapta a celulares, tabletas y computadoras. También puede instalarse en la pantalla de inicio para una experiencia más rápida y conservar el último menú visitado cuando la conexión es intermitente.
+
+> Mientras espera, el cliente puede acceder a una sección de minijuegos de cocina integrada en el menú.
 
 **Texto en pantalla:**
 
-`Validación en servidor · Precios protegidos · Realtime`
+`Sin descargas obligatorias · Responsive · PWA instalable`
 
-### 2:00–2:40 — Cocina Pro
+### 1:15–1:50 — Gestión del menú y personalización
 
-**Imagen:** llegada del pedido al KDS, alerta, movimiento entre estados y notificación en teléfono.
-
-**Narración:**
-
-> En Pro, el pedido llega además a la Pantalla de Cocina. Cocina ve la mesa, el cliente, las partidas y las notas, y puede mover la comanda entre Nuevo, En preparación y Listo.
-
-> Los pedidos nuevos generan una alerta sonora dentro de la aplicación y una notificación push cuando el dispositivo y el sistema operativo lo permiten. La PWA está preparada para computadora, Android y iPhone; en iOS se instala desde la pantalla de inicio.
-
-### 2:40–3:15 — Meseros y continuidad de atención
-
-**Imagen:** login de empleado, cliente solicitando asistencia, mesero aceptando y creando un pedido asistido.
+**Imagen:** crear categoría, agregar plato, cargar imagen, cambiar disponibilidad y abrir personalización.
 
 **Narración:**
 
-> Pro también permite crear usuarios de cocina y mesero sin pedirles un correo. Si un cliente solicita asistencia, todos los meseros disponibles reciben el aviso, pero solo el primero puede aceptar la mesa.
+> Desde el panel, el propietario crea categorías y platos, agrega fotografías, precios, descripciones, etiquetas y controla la disponibilidad de cada producto. También puede activar ofertas: CartaYa muestra el precio anterior, destaca el descuento y reúne automáticamente esos platos en la sección Ofertas.
 
-> Desde ese momento, la sesión permanece asignada al mismo mesero. Si esa mesa genera otro pedido, se le notifica directamente. El mesero también puede registrar el pedido de una persona que no tenga celular.
+> El plan Gratis permite publicar hasta veinte platos. Plus y Pro ofrecen platos ilimitados.
+
+> Desde Plus, el restaurante puede personalizar el logo, los colores, el estilo y la información que ven sus clientes. Pro extiende esa identidad visual a la plataforma interna utilizada por el equipo.
+
+### 1:50–2:25 — Pedido desde la mesa
+
+**Imagen:** QR de mesa, selección de productos, carrito, nombre, notas, envío y confirmación.
+
+**Narración:**
+
+> Con Plus y Pro, cada mesa puede tener un QR permanente. El cliente selecciona sus productos, indica cantidades, agrega notas para cocina y envía el pedido.
+
+> CartaYa valida el horario, la mesa, la disponibilidad y los precios directamente en el servidor. Después registra el pedido, actualiza el panel en tiempo real y abre la confirmación por WhatsApp.
+
+> El propietario puede consultar el historial, revisar el detalle de cada orden y seguir su estado desde cualquier dispositivo.
 
 **Texto en pantalla:**
 
-`Primer mesero acepta · Asignación exclusiva · Pedido asistido`
+`QR por mesa · Pedido seguro · Confirmación por WhatsApp`
 
-### 3:15–3:45 — Tutoriales, soporte y superadministración
+### 2:25–2:55 — Pantalla de Cocina Pro
 
-**Imagen:** buscador de tutoriales, creación de ticket y bandeja del superadmin.
-
-**Narración:**
-
-> La plataforma incluye una biblioteca de tutoriales con categorías y búsqueda. Los restaurantes también pueden abrir tickets, conversar con soporte y adjuntar capturas cifradas.
-
-> Como propietaria del SaaS, tengo un panel protegido con verificación en dos pasos. Desde ahí puedo consultar restaurantes, teléfonos y planes, aprobar solicitudes, administrar videos y responder tickets con notas internas.
-
-### 3:45–4:15 — Arquitectura y seguridad
-
-**Imagen:** diagrama sencillo con Next.js, Supabase, R2, Vercel y Web Push. No mostrar variables de entorno.
+**Imagen:** nuevo pedido entrando al KDS, alerta sonora, cambio a preparación y luego a listo.
 
 **Narración:**
 
-> Técnicamente, CartaYa utiliza Next.js y TypeScript en la aplicación, Supabase para autenticación, PostgreSQL, políticas RLS y eventos en tiempo real, Cloudflare R2 para archivos y Vercel para despliegue.
+> En el plan Pro, los pedidos llegan directamente a la Pantalla de Cocina. Cada comanda muestra la mesa, el cliente, los productos y las notas de preparación.
 
-> La arquitectura es multiempresa: cada restaurante está aislado por políticas de base de datos. También implementé validación del servidor, límites de frecuencia, MFA para superadministración, redirecciones seguras y cifrado AES-256-GCM para los adjuntos de soporte.
+> Cocina organiza los pedidos entre Nuevo, En preparación y Listo. Los pedidos nuevos pueden generar una alerta sonora dentro de la aplicación y notificaciones push incluso cuando la PWA no está abierta, según las capacidades del dispositivo.
 
 **Texto en pantalla:**
 
-`Next.js · TypeScript · PostgreSQL · RLS · Realtime · PWA`
+`Cocina en vivo · Estados claros · Alertas operativas`
 
-### 4:15–4:30 — Cierre
+### 2:55–3:25 — Meseros y atención en salón
 
-**Imagen:** tú en cámara; alternar con una última vista del producto en móvil y escritorio.
+**Imagen:** acceso de empleado, cliente solicitando asistencia, dos meseros recibiendo el aviso y uno aceptando.
 
 **Narración:**
 
-> CartaYa está entrando en una beta controlada con tres restaurantes. Este proyecto me ha enseñado que desarrollar software no es solamente programar pantallas: también significa comprender usuarios, diseñar permisos, proteger datos, desplegar y validar un modelo de negocio.
+> Pro también permite crear usuarios de mesero y cocina con un acceso sencillo, sin pedirles un correo personal.
 
-> Me encantaría conocer sus comentarios y conectar con personas interesadas en ingeniería de producto, SaaS y tecnología para restaurantes.
+> Cuando una mesa solicita asistencia, los meseros disponibles reciben el aviso. El primero que la acepta queda asignado de forma exclusiva, evitando que varias personas respondan a la misma solicitud.
+
+> Durante esa visita, la mesa conserva al mismo mesero. Los pedidos posteriores se le notifican directamente y el mesero también puede registrar pedidos para clientes que no tengan celular.
+
+**Texto en pantalla:**
+
+`Una mesa · Un mesero asignado · Atención continua`
+
+### 3:25–3:45 — Tutoriales, soporte y administración SaaS
+
+**Imagen:** búsqueda de tutorial, creación de ticket y panel de superadministración sin datos reales.
+
+**Narración:**
+
+> CartaYa incluye una biblioteca de tutoriales con categorías y búsqueda, además de un centro de soporte donde cada restaurante puede reportar problemas, conversar y adjuntar capturas protegidas.
+
+> El panel de superadministración permite gestionar restaurantes, teléfonos, planes, solicitudes, tutoriales y tickets. Las acciones globales están protegidas mediante verificación en dos pasos.
+
+### 3:45–4:00 — Planes y cierre
+
+**Imagen:** comparación de Gratis, Plus y Pro. Finalizar con el dominio y botón de registro.
+
+**Narración:**
+
+> CartaYa ofrece tres formas de comenzar. Gratis permite publicar el primer menú. Plus añade pedidos, QR por mesa y personalización. Pro incorpora cocina, meseros, solicitudes de asistencia y la operación completa del equipo.
+
+> Conoce CartaYa y crea tu menú en tucartaya.com.
 
 **Texto final:**
 
-`CartaYa · Construido desde República Dominicana`
+`CartaYa · Haz que pedir sea la parte fácil`
 
-## 4. Versión corta de 60 segundos
+`www.tucartaya.com`
 
-> Soy Leilany, estudiante de Ingeniería de Software, y estoy construyendo CartaYa, un SaaS multiempresa para restaurantes.
+## 4. Versión comercial de 60 segundos
 
-> Cada negocio puede publicar su menú PWA, cargar platos y generar QR. En Plus, los clientes realizan pedidos desde la mesa y el propietario los recibe en tiempo real. En Pro, cocina trabaja con un KDS, los meseros aceptan solicitudes de forma exclusiva y cada mesa mantiene al mismo mesero durante su visita.
+> Esto es CartaYa: una plataforma para conectar el menú digital, los pedidos, la cocina y la atención en salón.
 
-> También desarrollé roles sin correo para empleados, notificaciones push, personalización, tutoriales, tickets con adjuntos cifrados y un panel de superadministración protegido con MFA.
+> Cada restaurante obtiene un menú PWA con su propia identidad, categorías, fotografías, disponibilidad y códigos QR. El cliente entra sin descargar aplicaciones, selecciona sus productos y realiza el pedido desde la mesa.
 
-> La plataforma utiliza Next.js, TypeScript, Supabase, PostgreSQL, RLS, Realtime, Cloudflare R2 y Vercel. Ahora está entrando en una beta con tres restaurantes.
+> En Plus, el propietario recibe pedidos en tiempo real, consulta el historial y personaliza la experiencia del cliente.
 
-> Este proyecto me permitió trabajar no solo en código, sino también en producto, seguridad, experiencia de usuario y modelo SaaS. Pueden conocerlo en tucartaya.com.
+> En Pro, los pedidos llegan a la Pantalla de Cocina con alertas, mientras los meseros reciben solicitudes de asistencia. El primero que acepta queda asignado a la mesa durante toda la visita y también puede registrar pedidos para clientes sin celular.
 
-## 5. Texto sugerido para la publicación
+> CartaYa incluye notificaciones push, usuarios por rol, tutoriales, soporte y un panel completo para administrar el SaaS.
 
-Durante las últimas semanas he estado construyendo CartaYa, una plataforma SaaS multiempresa para restaurantes.
+> Gratis para comenzar, Plus para recibir pedidos y Pro para conectar toda la operación.
 
-El proyecto comenzó como una idea de menú digital y evolucionó hasta integrar pedidos por mesa, PWA, códigos QR, Pantalla de Cocina, usuarios mesero y cocina, asignación de mesas, Web Push, personalización, tutoriales, soporte y un panel de superadministración.
+> Conoce CartaYa en tucartaya.com.
 
-Tecnologías principales: Next.js, TypeScript, Supabase Auth, PostgreSQL, RLS, Realtime, Cloudflare R2 y Vercel.
+## 5. Texto sugerido para LinkedIn
 
-Uno de mis mayores aprendizajes fue entender que un producto real no termina cuando la interfaz funciona. También hay que diseñar permisos, aislamiento de datos, recuperación, notificaciones, soporte, seguridad y una experiencia coherente para cada rol.
+CartaYa conecta el menú digital, los pedidos, la cocina y la atención en salón desde una sola plataforma.
 
-CartaYa está entrando ahora en una beta controlada con tres restaurantes. Agradezco comentarios de personas que trabajen en ingeniería de producto, SaaS o tecnología para restaurantes.
+Cada restaurante puede publicar su menú PWA, cargar platos, personalizar su identidad y generar códigos QR. Los clientes acceden sin descargar aplicaciones y, desde Plus, pueden enviar pedidos directamente desde la mesa.
 
-Producto: https://www.tucartaya.com
+El plan Pro incorpora Pantalla de Cocina, alertas, usuarios mesero y cocina, solicitudes de asistencia, asignación exclusiva de mesas y pedidos asistidos para clientes sin celular.
 
-## 6. Recomendaciones de edición
+La plataforma también incluye Web Push, confirmación por WhatsApp, tutoriales, soporte técnico y un panel de superadministración protegido mediante MFA.
 
-- Abre con el resultado, no con el editor de código.
-- Cambia de pantalla cada cinco a ocho segundos.
-- Usa acercamientos suaves para mostrar interacciones pequeñas.
-- Mantén música instrumental muy baja para no competir con la voz.
-- Coloca subtítulos grandes, con máximo dos líneas simultáneas.
-- No muestres el panel del superadmin con datos reales.
-- Termina con tu nombre, carrera, rol en el proyecto y enlace.
-- Publica la versión completa y reutiliza la versión de 60 segundos como avance.
+CartaYa está preparada para iniciar una beta controlada con restaurantes reales.
+
+Conoce el producto: https://www.tucartaya.com
+
+## 6. Recomendaciones de grabación
+
+- Mostrar el producto desde el primer segundo.
+- Utilizar datos y cuentas de demostración.
+- No mostrar código durante la presentación comercial.
+- Alternar celular y computadora para demostrar que es responsive.
+- Grabar el pedido y la llegada a cocina en una sola secuencia continua.
+- Mantener cada toma entre cinco y ocho segundos.
+- Añadir subtítulos de máximo dos líneas.
+- Usar música instrumental discreta y mantener la voz como elemento principal.
+- Cerrar siempre con el dominio y una llamada a crear el menú.

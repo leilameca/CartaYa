@@ -53,6 +53,7 @@ export const planComparisonFeatures: Array<{
   { label: "Menú digital PWA", gratis: true, plus: true, pro: true },
   { label: "Categorías, fotos y disponibilidad", gratis: true, plus: true, pro: true },
   { label: "Cantidad de platos", gratis: "Hasta 20", plus: "Ilimitados", pro: "Ilimitados" },
+  { label: "Ofertas y precios promocionales", gratis: true, plus: true, pro: true },
   { label: "QR general", gratis: true, plus: true, pro: true },
   { label: "Minijuegos para clientes", gratis: true, plus: true, pro: true },
   { label: "Tutoriales y centro de soporte", gratis: true, plus: true, pro: true },

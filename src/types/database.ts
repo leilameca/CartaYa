@@ -157,6 +157,7 @@ export type Database = {
           image_url: string | null
           is_available: boolean
           name: string
+          offer_price: number | null
           price: number
           restaurant_id: string
           tag: Database["public"]["Enums"]["menu_item_tag"] | null
@@ -169,6 +170,7 @@ export type Database = {
           image_url?: string | null
           is_available?: boolean
           name: string
+          offer_price?: number | null
           price: number
           restaurant_id: string
           tag?: Database["public"]["Enums"]["menu_item_tag"] | null
@@ -181,6 +183,7 @@ export type Database = {
           image_url?: string | null
           is_available?: boolean
           name?: string
+          offer_price?: number | null
           price?: number
           restaurant_id?: string
           tag?: Database["public"]["Enums"]["menu_item_tag"] | null

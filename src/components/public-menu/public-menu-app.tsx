@@ -47,6 +47,14 @@ function quantityButtonLabel(item: PublicMenuItem, direction: "add" | "remove") 
   return `${direction === "add" ? "Agregar" : "Quitar"} una unidad de ${item.name}`;
 }
 
+function effectivePrice(item: PublicMenuItem) {
+  return typeof item.offer_price === "number" ? item.offer_price : item.price;
+}
+
+function hasOffer(item: PublicMenuItem) {
+  return typeof item.offer_price === "number";
+}
+
 export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) {
   const cacheKey = `cartaya:menu:${initialMenu.restaurant.slug}:${initialMenu.table?.id ?? "general"}`;
   const [menu, setMenu] = useState<PublicMenuData>(() => {
@@ -106,6 +114,12 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
   }, []);
 
   const categories = useMemo(() => menu.categories.filter((category) => category.items.length > 0), [menu]);
+  const displayCategories = useMemo(() => {
+    const offers = categories.flatMap((category) => category.items).filter(hasOffer);
+    return offers.length > 0
+      ? [{ id: "offers", name: "Ofertas", display_order: -1, items: offers }, ...categories]
+      : categories;
+  }, [categories]);
   const itemMap = useMemo(
     () => new Map(menu.categories.flatMap((category) => category.items).map((item) => [item.id, item])),
     [menu],
@@ -118,7 +132,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
     [cart, itemMap],
   );
   const itemCount = cartItems.reduce((total, entry) => total + entry.quantity, 0);
-  const subtotal = cartItems.reduce((total, entry) => total + entry.item.price * entry.quantity, 0);
+  const subtotal = cartItems.reduce((total, entry) => total + effectivePrice(entry.item) * entry.quantity, 0);
   const restaurantOpen = isRestaurantOpen(menu.restaurant.opening_hours, now);
   const canOrder = restaurantOpen && menu.table_valid;
   const primaryColor = menu.restaurant.primary_color || "#FF6B35";
@@ -161,7 +175,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
 
       setOrderState({ orderId: result.order_id });
       const lines = cartItems.map(({ item, quantity }) =>
-        `${quantity}× ${item.name} — ${currency.format(item.price * quantity)}`,
+        `${quantity}× ${item.name} — ${currency.format(effectivePrice(item) * quantity)}`,
       );
       const tableText = result.table_label ? `Mesa: ${result.table_label}` : "Pedido desde el menú general";
       const message = [
@@ -242,7 +256,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
       {categories.length > 0 ? (
         <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur" aria-label="Categorías del menú">
           <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-8 [&::-webkit-scrollbar]:hidden">
-            {categories.map((category, index) => (
+            {displayCategories.map((category, index) => (
               <button
                 key={category.id}
                 onClick={() => scrollToCategory(category.id)}
@@ -263,7 +277,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
             <h2 className="mt-5 text-2xl font-bold">El menú estará disponible pronto</h2>
             <p className="mt-2 text-slate-500">Este restaurante todavía no tiene platos disponibles.</p>
           </section>
-        ) : categories.map((category) => (
+        ) : displayCategories.map((category) => (
           <section key={category.id} id={`category-${category.id}`} className="scroll-mt-20 pb-10">
             <div className="mb-4 flex items-center gap-3">
               <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{category.name}</h2>
@@ -283,17 +297,23 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
                       {!item.image_url ? <Utensils className="size-8 text-slate-300" /> : null}
                     </div>
                     <div className="flex min-w-0 flex-col p-4">
-                      <div className="flex items-start gap-2">
+                      <div className="flex flex-wrap items-start gap-2">
                         <h3 className="font-extrabold leading-5">{item.name}</h3>
                         {item.tag ? (
                           <span className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase" style={{ backgroundColor: rgba(primaryColor, 0.1), color: primaryColor }}>
                             {item.tag === "nuevo" ? "Nuevo" : "Popular"}
                           </span>
                         ) : null}
+                        {hasOffer(item) ? (
+                          <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-extrabold uppercase text-red-600">Oferta</span>
+                        ) : null}
                       </div>
                       {item.description ? <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-slate-500">{item.description}</p> : null}
                       <div className="mt-auto flex items-end justify-between gap-3 pt-3">
-                        <p className="font-extrabold" style={{ color: primaryColor }}>{currency.format(item.price)}</p>
+                        <div className="flex flex-col">
+                          <p className="font-extrabold" style={{ color: primaryColor }}>{currency.format(effectivePrice(item))}</p>
+                          {hasOffer(item) ? <p className="text-xs text-slate-400 line-through">{currency.format(item.price)}</p> : null}
+                        </div>
                         {quantity > 0 ? (
                           <div className="flex items-center rounded-full border border-slate-200 bg-white p-0.5 shadow-sm">
                             <button onClick={() => changeQuantity(item.id, -1)} className="flex size-8 items-center justify-center rounded-full text-slate-600" aria-label={quantityButtonLabel(item, "remove")}><Minus className="size-4" /></button>
@@ -353,13 +373,13 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
               <div className="space-y-4">
                 {cartItems.map(({ item, quantity }) => (
                   <div key={item.id} className="flex items-center gap-3">
-                    <div className="min-w-0 flex-1"><p className="truncate font-bold">{item.name}</p><p className="text-sm text-slate-500">{currency.format(item.price)} c/u</p></div>
+                    <div className="min-w-0 flex-1"><p className="truncate font-bold">{item.name}</p><p className="text-sm text-slate-500">{currency.format(effectivePrice(item))} c/u</p></div>
                     <div className="flex items-center rounded-full border p-0.5">
                       <button onClick={() => changeQuantity(item.id, -1)} className="flex size-8 items-center justify-center rounded-full" aria-label={quantityButtonLabel(item, "remove")}><Minus className="size-4" /></button>
                       <span className="w-7 text-center text-sm font-bold">{quantity}</span>
                       <button onClick={() => changeQuantity(item.id, 1)} className="flex size-8 items-center justify-center rounded-full text-white" style={{ backgroundColor: primaryColor }} aria-label={quantityButtonLabel(item, "add")}><Plus className="size-4" /></button>
                     </div>
-                    <p className="w-24 text-right font-extrabold">{currency.format(item.price * quantity)}</p>
+                    <p className="w-24 text-right font-extrabold">{currency.format(effectivePrice(item) * quantity)}</p>
                     <button onClick={() => changeQuantity(item.id, -quantity)} className="text-slate-400 hover:text-red-500" aria-label={`Eliminar ${item.name}`}><Trash2 className="size-4" /></button>
                   </div>
                 ))}

@@ -204,6 +204,7 @@ function DishDialog({
   const formRef = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
   const [available, setAvailable] = useState(item?.is_available ?? true);
+  const [onOffer, setOnOffer] = useState(item?.offer_price !== null && item?.offer_price !== undefined);
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<MenuActionResult | null>(null);
 
@@ -214,6 +215,7 @@ function DishDialog({
       try {
         const formData = new FormData(form);
         formData.set("isAvailable", String(available));
+        formData.set("isOffer", String(onOffer));
         if (item) formData.set("menuItemId", item.id);
 
         const image = formData.get("image");
@@ -236,7 +238,7 @@ function DishDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(value) => { setOpen(value); if (value) { setResult(null); setAvailable(item?.is_available ?? true); } }}>
+    <Dialog open={open} onOpenChange={(value) => { setOpen(value); if (value) { setResult(null); setAvailable(item?.is_available ?? true); setOnOffer(item?.offer_price !== null && item?.offer_price !== undefined); } }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
@@ -262,6 +264,22 @@ function DishDialog({
               <select id={`dish-category-${item?.id ?? "new"}`} name="categoryId" defaultValue={item?.category_id ?? categories[0]?.id} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" required>
                 {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
               </select>
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <div className="flex items-center justify-between rounded-xl border bg-orange-50/60 p-4">
+                <div>
+                  <Label htmlFor={`dish-offer-${item?.id ?? "new"}`}>Plato en oferta</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">Actívalo para mostrar el precio rebajado y la etiqueta Oferta.</p>
+                </div>
+                <Switch id={`dish-offer-${item?.id ?? "new"}`} checked={onOffer} onCheckedChange={setOnOffer} />
+              </div>
+              {onOffer ? (
+                <div className="space-y-2">
+                  <Label htmlFor={`dish-offer-price-${item?.id ?? "new"}`}>Precio de oferta (RD$)</Label>
+                  <Input id={`dish-offer-price-${item?.id ?? "new"}`} name="offerPrice" type="number" min="0" max="9999999999.99" step="0.01" defaultValue={item?.offer_price ?? ""} placeholder="350.00" required />
+                  <p className="text-xs text-muted-foreground">Debe ser menor que el precio regular.</p>
+                </div>
+              ) : <input type="hidden" name="offerPrice" value="" />}
             </div>
             <div className="space-y-2">
               <Label htmlFor={`dish-tag-${item?.id ?? "new"}`}>Etiqueta opcional</Label>
@@ -340,9 +358,13 @@ function DishCard({ item, categories, r2Configured }: { item: MenuItem; categori
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-semibold text-brand-navy">{item.name}</h3>
           {item.tag && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${item.tag === "popular" ? "bg-brand-orange/10 text-brand-orange" : "bg-brand-green/10 text-brand-green"}`}>{item.tag === "popular" ? "Popular" : "Nuevo"}</span>}
+          {item.offer_price !== null && <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase text-red-600">Oferta</span>}
         </div>
         {item.description && <p className="mt-1 line-clamp-2 text-sm text-slate-500">{item.description}</p>}
-        <p className="mt-2 font-bold text-brand-navy">RD$ {Number(item.price).toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        <div className="mt-2 flex flex-wrap items-baseline gap-2">
+          <p className="font-bold text-brand-navy">RD$ {Number(item.offer_price ?? item.price).toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          {item.offer_price !== null ? <p className="text-xs text-slate-400 line-through">RD$ {Number(item.price).toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p> : null}
+        </div>
       </div>
       <div className="flex items-start justify-between gap-2 sm:flex-col sm:items-end">
         <AvailabilityToggle item={item} />
@@ -444,7 +466,7 @@ export function MenuManager({
         <div>
           <p className="text-sm font-semibold uppercase tracking-wider text-brand-green">{restaurantName}</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-brand-navy">Gestor de menú</h1>
-          <p className="mt-2 text-slate-600">Organiza tus categorías, platos, precios y disponibilidad.</p>
+          <p className="mt-2 text-slate-600">Organiza tus categorías, platos, precios, ofertas y disponibilidad.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <CategoryDialog trigger={<Button type="button" variant="outline" className="gap-2"><Plus className="h-4 w-4" />Nueva categoría</Button>} />

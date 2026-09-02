@@ -79,17 +79,20 @@ try {
 
   const { data: testDish, error: dishError } = await publicClient
     .from("menu_items")
-    .insert({ restaurant_id: restaurantId, category_id: fuertes.id, name: "Mofongo", description: "Prueba", price: 450, tag: "popular" })
-    .select("id")
+    .insert({ restaurant_id: restaurantId, category_id: fuertes.id, name: "Mofongo", description: "Prueba", price: 450, offer_price: 375, tag: "popular" })
+    .select("id, price, offer_price")
     .single();
   if (dishError) throw dishError;
+  assert(Number(testDish.offer_price) === 375, "El precio de oferta no se guardó");
+  const { error: invalidOfferError } = await publicClient.from("menu_items").update({ offer_price: 500 }).eq("id", testDish.id);
+  assert(invalidOfferError, "La base permitió una oferta igual o mayor al precio regular");
   const { error: unavailableError } = await publicClient.from("menu_items").update({ is_available: false }).eq("id", testDish.id);
   if (unavailableError) throw unavailableError;
   const { data: unavailableDish } = await publicClient.from("menu_items").select("is_available").eq("id", testDish.id).single();
   assert(unavailableDish?.is_available === false, "El estado Agotado no se guardó");
   const { error: deleteDishError } = await publicClient.from("menu_items").delete().eq("id", testDish.id);
   if (deleteDishError) throw deleteDishError;
-  console.log("✓ Platos: crear, marcar Agotado y eliminar");
+  console.log("✓ Platos: crear una oferta válida, rechazar descuentos inválidos, marcar Agotado y eliminar");
 
   const twentyItems = Array.from({ length: 20 }, (_, index) => ({
     restaurant_id: restaurantId,

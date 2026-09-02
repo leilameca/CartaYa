@@ -25,7 +25,7 @@ export default async function MenuPage() {
 
   const [{ data: categories, error: categoriesError }, { data: items, error: itemsError }] = await Promise.all([
     supabase.from("categories").select("id, name, display_order, restaurant_id").eq("restaurant_id", profile.restaurant_id).order("display_order").order("name"),
-    supabase.from("menu_items").select("id, restaurant_id, category_id, name, description, price, image_url, is_available, tag, display_order").eq("restaurant_id", profile.restaurant_id).order("display_order").order("name"),
+    supabase.from("menu_items").select("id, restaurant_id, category_id, name, description, price, offer_price, image_url, is_available, tag, display_order").eq("restaurant_id", profile.restaurant_id).order("display_order").order("name"),
   ]);
   if (categoriesError || itemsError) throw new Error("No se pudo cargar el menú.");
 

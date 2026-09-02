@@ -55,12 +55,17 @@ CartaYa debe permitir que restaurantes publiquen un menú digital por QR, reciba
 
 - **RF-023.** El propietario debe crear, editar, ordenar y eliminar categorías.
 - **RF-024.** El propietario debe crear, editar, ordenar y eliminar platos.
-- **RF-025.** Cada plato debe admitir nombre, descripción, precio, categoría, etiqueta, imagen y disponibilidad.
+- **RF-025.** Cada plato debe admitir nombre, descripción, precio regular, precio de oferta opcional, categoría, etiqueta, imagen y disponibilidad.
 - **RF-026.** El propietario debe marcar temporalmente un plato como disponible o no disponible.
 - **RF-027.** El sistema debe validar tipo, tamaño y firma binaria de las imágenes.
 - **RF-028.** El sistema debe permitir cargar imágenes desde computadora o celular.
 - **RF-029.** El sistema debe recalcular los precios desde la base de datos al recibir un pedido.
 - **RF-030.** Los clientes solo deben ver platos marcados como disponibles.
+- **RF-097.** El propietario debe activar o retirar una oferta individual desde el editor del plato.
+- **RF-098.** El precio de oferta debe ser menor que el precio regular y esta regla debe validarse tanto en la aplicación como en PostgreSQL.
+- **RF-099.** Los platos rebajados deben mostrar automáticamente la etiqueta `Oferta`, el precio vigente y el precio regular tachado.
+- **RF-100.** El menú público debe generar una sección `Ofertas` con todos los platos disponibles que tengan un precio promocional.
+- **RF-101.** Los pedidos públicos y asistidos deben cobrar el precio promocional vigente calculado por PostgreSQL.
 
 ### 3.4 Personalización
 
@@ -195,7 +200,7 @@ Estas capacidades no deben presentarse como terminadas:
 - Reportes avanzados y analítica comercial del restaurante.
 - Inventario y recetas.
 - Integración con impresoras, POS o facturación fiscal.
-- Promociones programadas o descuentos para platos.
+- Programación automática de ofertas por fecha u horario.
 - Aplicaciones nativas publicadas en App Store y Google Play.
 - Operación sin conexión para crear pedidos.
 - Acuerdos formales de disponibilidad o soporte 24/7.

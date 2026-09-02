@@ -15,10 +15,10 @@ export default async function SalonPage() {
     supabase.from("table_service_requests").select("id, table_id, created_at").eq("restaurant_id", profile.restaurant_id).eq("status", "pending").order("created_at"),
     supabase.from("table_service_sessions").select("id, table_id, claimed_at").eq("restaurant_id", profile.restaurant_id).eq("waiter_id", user.id).eq("status", "active").order("claimed_at"),
     supabase.from("tables").select("id, label").eq("restaurant_id", profile.restaurant_id).order("label"),
-    supabase.from("menu_items").select("id, name, price, category:categories(name)").eq("restaurant_id", profile.restaurant_id).eq("is_available", true).order("name"),
+    supabase.from("menu_items").select("id, name, price, offer_price, category:categories(name)").eq("restaurant_id", profile.restaurant_id).eq("is_available", true).order("name"),
     fetchRestaurantOrders(supabase, profile.restaurant_id, { activeOnly: true }),
   ]);
-  const items = (menuItems ?? []).map((item) => { const category = item.category as unknown as { name: string } | { name: string }[] | null; return { id: item.id, name: item.name, price: Number(item.price), category: (Array.isArray(category) ? category[0] : category)?.name ?? "Menú" }; });
+  const items = (menuItems ?? []).map((item) => { const category = item.category as unknown as { name: string } | { name: string }[] | null; return { id: item.id, name: item.name, price: Number(item.offer_price ?? item.price), regularPrice: Number(item.price), onOffer: item.offer_price !== null, category: (Array.isArray(category) ? category[0] : category)?.name ?? "Menú" }; });
   const tableMap = new Map((tables ?? []).map((table) => [table.id, table.label]));
   const mappedRequests = (requests ?? []).map((request) => ({ ...request, table: { label: tableMap.get(request.table_id) ?? "—" } }));
   const mappedSessions = (sessions ?? []).map((session) => ({ ...session, table: { label: tableMap.get(session.table_id) ?? "—" } }));

@@ -31,6 +31,7 @@ La fuente única usada por la landing y el panel está en `src/lib/subscriptions
 | Menú digital PWA | Sí | Sí | Sí |
 | Categorías, fotos y disponibilidad | Sí | Sí | Sí |
 | Platos | Hasta 20 | Ilimitados | Ilimitados |
+| Ofertas en platos y sección promocional | Sí | Sí | Sí |
 | QR general | Sí | Sí | Sí |
 | Minijuegos, tutoriales y soporte | Sí | Sí | Sí |
 | Personalización del menú público | No | Sí | Sí |
@@ -58,7 +59,7 @@ Todos los usuarios entran por `/login`. Los empleados seleccionan la opción de 
 
 Rutas principales:
 
-- `/dashboard/menu`: categorías y platos.
+- `/dashboard/menu`: categorías, platos, ofertas, precios y disponibilidad.
 - `/dashboard/qr`: códigos QR.
 - `/dashboard/pedidos`: historial y gestión desde Plus.
 - `/dashboard/configuracion`: marca pública desde Plus y tema interno en Pro.

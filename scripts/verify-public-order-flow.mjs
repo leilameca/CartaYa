@@ -70,6 +70,7 @@ try {
       category_id: category.id,
       name: "Plato de prueba PWA",
       price: 245.5,
+      offer_price: 199.5,
       is_available: true,
     })
     .select("id")
@@ -95,7 +96,7 @@ try {
   ]);
   if (orderError) throw orderError;
   if (orderItemsError) throw orderItemsError;
-  if (Number(order.total) !== 491 || orderItems.length !== 1 || orderItems[0].quantity !== 2) {
+  if (Number(order.total) !== 399 || Number(orderItems[0]?.unit_price) !== 199.5 || orderItems.length !== 1 || orderItems[0].quantity !== 2) {
     throw new Error("El pedido transaccional no coincide con las cantidades y precios esperados");
   }
 
@@ -105,6 +106,7 @@ try {
     orderCreated: true,
     orderItemsCreated: orderItems.length,
     serverCalculatedTotal: Number(order.total),
+    promotionalUnitPrice: Number(orderItems[0].unit_price),
     initialStatus: order.status,
     whatsappPhoneReturned: result.phone === "18095550199",
     temporaryRestaurantWillBeRemoved: true,
