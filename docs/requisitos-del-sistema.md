@@ -61,11 +61,6 @@ CartaYa debe permitir que restaurantes publiquen un menú digital por QR, reciba
 - **RF-028.** El sistema debe permitir cargar imágenes desde computadora o celular.
 - **RF-029.** El sistema debe recalcular los precios desde la base de datos al recibir un pedido.
 - **RF-030.** Los clientes solo deben ver platos marcados como disponibles.
-- **RF-097.** El propietario debe activar o retirar una oferta individual desde el editor del plato.
-- **RF-098.** El precio de oferta debe ser menor que el precio regular y esta regla debe validarse tanto en la aplicación como en PostgreSQL.
-- **RF-099.** Los platos rebajados deben mostrar automáticamente la etiqueta `Oferta`, el precio vigente y el precio regular tachado.
-- **RF-100.** El menú público debe generar una sección `Ofertas` con todos los platos disponibles que tengan un precio promocional.
-- **RF-101.** Los pedidos públicos y asistidos deben cobrar el precio promocional vigente calculado por PostgreSQL.
 
 ### 3.4 Personalización
 
@@ -156,6 +151,14 @@ CartaYa debe permitir que restaurantes publiquen un menú digital por QR, reciba
 - **RF-094.** La landing debe presentar capacidades, planes, precios y llamadas a registro.
 - **RF-095.** El sistema debe publicar términos, privacidad, cookies y seguridad.
 - **RF-096.** La plataforma debe utilizar `tucartaya.com` como dominio canónico.
+
+### 3.12 Ofertas de platos
+
+- **RF-097.** El propietario debe activar o retirar una oferta individual desde el editor del plato.
+- **RF-098.** El precio de oferta debe ser menor que el precio regular y esta regla debe validarse tanto en la aplicación como en PostgreSQL.
+- **RF-099.** Los platos rebajados deben mostrar automáticamente la etiqueta `Oferta`, el precio vigente y el precio regular tachado.
+- **RF-100.** El menú público debe generar una sección `Ofertas` con todos los platos disponibles que tengan un precio promocional.
+- **RF-101.** Los pedidos públicos y asistidos deben cobrar el precio promocional vigente calculado por PostgreSQL.
 
 ## 4. Requisitos no funcionales
 

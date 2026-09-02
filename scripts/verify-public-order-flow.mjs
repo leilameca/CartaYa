@@ -77,6 +77,11 @@ try {
     .single();
   if (itemError) throw itemError;
 
+  const { data: publicMenu, error: publicMenuError } = await admin.rpc("get_public_menu", { p_slug: slug, p_table_id: null });
+  if (publicMenuError) throw publicMenuError;
+  const publicItem = publicMenu?.categories?.flatMap((entry) => entry.items ?? []).find((entry) => entry.id === item.id);
+  if (Number(publicItem?.offer_price) !== 199.5) throw new Error("El menú público no expuso el precio de oferta");
+
   const response = await fetch(`${siteUrl}/api/public/orders`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -107,6 +112,7 @@ try {
     orderItemsCreated: orderItems.length,
     serverCalculatedTotal: Number(order.total),
     promotionalUnitPrice: Number(orderItems[0].unit_price),
+    publicMenuOfferPrice: Number(publicItem.offer_price),
     initialStatus: order.status,
     whatsappPhoneReturned: result.phone === "18095550199",
     temporaryRestaurantWillBeRemoved: true,
