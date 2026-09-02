@@ -22,5 +22,5 @@ export default async function SalonPage() {
   const tableMap = new Map((tables ?? []).map((table) => [table.id, table.label]));
   const mappedRequests = (requests ?? []).map((request) => ({ ...request, table: { label: tableMap.get(request.table_id) ?? "—" } }));
   const mappedSessions = (sessions ?? []).map((session) => ({ ...session, table: { label: tableMap.get(session.table_id) ?? "—" } }));
-  return <SalonDashboard restaurantId={profile.restaurant_id} waiterName={profile.full_name} requests={mappedRequests} sessions={mappedSessions} tables={tables ?? []} items={items} assignedOrders={orders.filter((order) => order.assignedWaiterId === user.id)} />;
+  return <SalonDashboard restaurantId={profile.restaurant_id} waiterName={profile.full_name} requests={mappedRequests} sessions={mappedSessions} tables={tables ?? []} items={items} assignedOrders={orders.filter((order) => order.assignedWaiterId === user.id)} restaurantOrders={orders} />;
 }

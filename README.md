@@ -53,7 +53,7 @@ Todos los usuarios entran por `/login`. Los empleados seleccionan la opción de 
 | Rol | Acceso principal |
 | --- | --- |
 | `owner` | Menú, QR, pedidos, plan, personalización, equipo, cocina, tutoriales y soporte según el plan |
-| `mesero` | Mesas asignadas, solicitudes, pedidos asistidos, tutoriales y soporte en Pro |
+| `mesero` | Mesas asignadas, solicitudes, pedidos asistidos y consulta de comandas de otras mesas, tutoriales y soporte en Pro |
 | `cocina` | KDS, notificaciones, tutoriales y soporte en Pro |
 | `superadmin` | Administración global, planes, tutoriales y soporte con MFA obligatorio |
 

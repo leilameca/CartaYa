@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { BellRing, Check, ChefHat, Minus, Plus, UserCheck, X } from "lucide-react";
+import { BellRing, Check, ChefHat, Eye, Minus, Plus, UserCheck, X } from "lucide-react";
 import { claimServiceRequestAction, closeTableSessionAction, createWaiterOrderAction } from "@/app/dashboard/salon/actions";
 import { createClient } from "@/lib/supabase/client";
 import type { DashboardOrder } from "@/types/orders";
@@ -13,17 +13,19 @@ type Table = { id: string; label: string };
 type Item = { id: string; name: string; price: number; regularPrice: number; onOffer: boolean; category: string };
 const relation = <T,>(value: T | T[] | null) => Array.isArray(value) ? value[0] ?? null : value;
 
-export function SalonDashboard({ restaurantId, waiterName, requests, sessions, assignedOrders, tables, items }: { restaurantId: string; waiterName: string; requests: Request[]; sessions: Session[]; assignedOrders: DashboardOrder[]; tables: Table[]; items: Item[] }) {
+export function SalonDashboard({ restaurantId, waiterName, requests, sessions, assignedOrders, restaurantOrders, tables, items }: { restaurantId: string; waiterName: string; requests: Request[]; sessions: Session[]; assignedOrders: DashboardOrder[]; restaurantOrders: DashboardOrder[]; tables: Table[]; items: Item[] }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ error?: string; success?: string }>({});
   const [orderOpen, setOrderOpen] = useState(false);
   const [tableId, setTableId] = useState(sessions[0]?.table_id ?? tables[0]?.id ?? "");
+  const [lookupTableId, setLookupTableId] = useState(tables[0]?.id ?? "");
   const [customerName, setCustomerName] = useState("");
   const [notes, setNotes] = useState("");
   const [cart, setCart] = useState<Record<string, number>>({});
   const seen = useRef(new Set(requests.map((request) => request.id)));
+  const lookupOrders = restaurantOrders.filter((order) => order.tableId === lookupTableId);
 
   useEffect(() => {
     const channel = supabase.channel(`salon-${restaurantId}`)
@@ -57,6 +59,15 @@ export function SalonDashboard({ restaurantId, waiterName, requests, sessions, a
       <section className="rounded-3xl border bg-white shadow-sm"><div className="flex items-center gap-3 border-b p-5"><UserCheck className="text-brand-green" /><div><h2 className="font-black">Mis mesas activas</h2><p className="text-sm text-slate-500">Los pedidos nuevos de estas mesas se asignan a ti.</p></div></div><div className="divide-y">{sessions.length ? sessions.map((session) => <div key={session.id} className="flex items-center justify-between p-5"><div><p className="text-lg font-black">Mesa {relation(session.table)?.label ?? "—"}</p><p className="text-xs text-slate-500">Desde {new Date(session.claimed_at).toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}</p></div><button disabled={pending} onClick={() => close(session.id)} className="rounded-xl border px-4 py-2 text-sm font-bold text-slate-600">Finalizar visita</button></div>) : <p className="p-10 text-center text-sm text-slate-500">Todavía no tienes mesas asignadas.</p>}</div></section>
     </div>
     <section className="mt-6 rounded-3xl border bg-white shadow-sm"><div className="border-b p-5"><h2 className="font-black">Pedidos de mis mesas</h2></div><div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">{assignedOrders.length ? assignedOrders.map((order) => <div key={order.id} className="rounded-2xl border p-4"><div className="flex justify-between"><strong>Mesa {order.tableLabel ?? "—"}</strong><span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold">{order.status.replace("_", " ")}</span></div><p className="mt-1 text-sm text-slate-500">{order.customerName ?? "Cliente"}</p><p className="mt-3 text-sm">{order.items.map((item) => `${item.quantity}× ${item.name}`).join(", ")}</p></div>) : <p className="col-span-full py-8 text-center text-sm text-slate-500">Aún no hay pedidos asignados.</p>}</div></section>
+    <section className="mt-6 rounded-3xl border bg-white shadow-sm">
+      <div className="flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-brand-navy"><Eye className="size-5" /></span><div><h2 className="font-black">Consultar otra mesa</h2><p className="mt-1 text-sm text-slate-500">Puedes informar qué pidió y su estado en cocina sin cambiar el mesero asignado.</p></div></div>
+        <label className="text-sm font-bold text-slate-600">Mesa<select value={lookupTableId} onChange={(event) => setLookupTableId(event.target.value)} className="ml-2 h-10 min-w-36 rounded-xl border bg-white px-3">{tables.map((table) => <option key={table.id} value={table.id}>{table.label}</option>)}</select></label>
+      </div>
+      <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+        {lookupOrders.length ? lookupOrders.map((order) => <div key={order.id} className="rounded-2xl border bg-slate-50 p-4"><div className="flex items-center justify-between gap-3"><strong>Mesa {order.tableLabel ?? "—"}</strong><span className="rounded-full bg-white px-2 py-1 text-xs font-bold capitalize shadow-sm">{order.status.replace("_", " ")}</span></div><p className="mt-1 text-sm text-slate-500">{order.customerName ?? "Cliente"}</p><p className="mt-3 text-sm font-semibold text-brand-navy">{order.items.map((item) => `${item.quantity}× ${item.name}`).join(", ")}</p>{order.notes ? <p className="mt-2 text-xs text-slate-500">Nota: {order.notes}</p> : null}<p className="mt-3 text-xs font-bold text-slate-400">Solo consulta</p></div>) : <p className="col-span-full py-8 text-center text-sm text-slate-500">Esta mesa no tiene pedidos activos en cocina.</p>}
+      </div>
+    </section>
     {orderOpen ? <div className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center"><div className="max-h-[92svh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 sm:max-w-3xl sm:rounded-3xl sm:p-7"><div className="flex items-center justify-between"><div><p className="text-xs font-black uppercase text-brand-green">Pedido asistido</p><h2 className="text-2xl font-black">Enviar a cocina</h2></div><button onClick={() => setOrderOpen(false)} className="rounded-full bg-slate-100 p-2"><X /></button></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><label className="text-sm font-bold">Mesa<select value={tableId} onChange={(event) => setTableId(event.target.value)} className="mt-1 h-11 w-full rounded-xl border px-3">{tables.map((table) => <option key={table.id} value={table.id}>{table.label}</option>)}</select></label><label className="text-sm font-bold">Nombre del cliente<input value={customerName} onChange={(event) => setCustomerName(event.target.value)} className="mt-1 h-11 w-full rounded-xl border px-3" /></label></div><div className="mt-5 grid gap-2 sm:grid-cols-2">{items.map((item) => <div key={item.id} className="flex items-center gap-3 rounded-xl border p-3"><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate font-bold">{item.name}</p>{item.onOffer ? <span className="rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-black uppercase text-red-600">Oferta</span> : null}</div><p className="text-xs text-slate-500">{item.category} · RD$ {item.price.toFixed(2)}{item.onOffer ? <span className="ml-1 line-through">RD$ {item.regularPrice.toFixed(2)}</span> : null}</p></div><button onClick={() => quantity(item.id, -1)} className="rounded-lg bg-slate-100 p-2"><Minus className="size-4" /></button><span className="w-5 text-center font-black">{cart[item.id] ?? 0}</span><button onClick={() => quantity(item.id, 1)} className="rounded-lg bg-brand-orange p-2 text-white"><Plus className="size-4" /></button></div>)}</div><label className="mt-4 block text-sm font-bold">Notas para cocina<textarea value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-1 min-h-20 w-full rounded-xl border p-3" /></label><button disabled={pending} onClick={submitOrder} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-5 py-3 font-black text-white disabled:opacity-50"><Check />{pending ? "Enviando…" : "Enviar pedido a cocina"}</button></div></div> : null}
   </main>;
 }

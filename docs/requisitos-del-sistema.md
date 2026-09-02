@@ -160,6 +160,12 @@ CartaYa debe permitir que restaurantes publiquen un menú digital por QR, reciba
 - **RF-100.** El menú público debe generar una sección `Ofertas` con todos los platos disponibles que tengan un precio promocional.
 - **RF-101.** Los pedidos públicos y asistidos deben cobrar el precio promocional vigente calculado por PostgreSQL.
 
+### 3.13 Consulta operativa y atribución
+
+- **RF-102.** El llamado al mesero debe aparecer de forma visible al inicio de todo menú Pro abierto desde un QR de mesa válido.
+- **RF-103.** Un mesero Pro debe consultar los pedidos activos y el estado de cocina de cualquier mesa de su restaurante sin apropiarse de su asignación.
+- **RF-104.** El crédito de CartaYa al final del menú público debe dirigir a `https://tucartaya.com`.
+
 ## 4. Requisitos no funcionales
 
 | ID | Requisito verificable | Estado beta |

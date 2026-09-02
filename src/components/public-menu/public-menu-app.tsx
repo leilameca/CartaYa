@@ -253,6 +253,25 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
         </div>
       ) : null}
 
+      {menu.table && menu.restaurant.subscription_tier === "pro" ? (
+        <section className="mx-auto w-full max-w-7xl px-4 pt-5 sm:px-8">
+          <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex items-start gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full text-white" style={{ backgroundColor: secondaryColor }}><BellRing className="size-5" /></span>
+              <div>
+                <p className="font-black text-brand-navy">¿Necesitas ayuda en la mesa?</p>
+                <p className="mt-0.5 text-sm text-slate-500">Avisa al equipo; el primer mesero que acepte quedará a cargo de tu mesa.</p>
+                {serviceState.success ? <p className="mt-2 text-sm font-bold text-emerald-600">{serviceState.success}</p> : null}
+                {serviceState.error ? <p className="mt-2 text-sm font-bold text-red-600">{serviceState.error}</p> : null}
+              </div>
+            </div>
+            <button onClick={requestWaiter} disabled={serviceState.loading || Boolean(serviceState.success)} className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 font-black text-white disabled:opacity-60" style={{ backgroundColor: secondaryColor }}>
+              <BellRing className="size-5" />{serviceState.loading ? "Avisando…" : "Llamar a un mesero"}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       {categories.length > 0 ? (
         <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur" aria-label="Categorías del menú">
           <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-8 [&::-webkit-scrollbar]:hidden">
@@ -341,8 +360,6 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
         ))}
       </div>
 
-      {menu.table && menu.restaurant.subscription_tier === "pro" ? <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-8"><div className="flex flex-col gap-4 rounded-3xl border bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><p className="font-black text-brand-navy">¿Necesitas ayuda en la mesa?</p><p className="text-sm text-slate-500">Avisa al equipo; el primer mesero que acepte quedará a cargo de tu mesa.</p>{serviceState.success ? <p className="mt-2 text-sm font-bold text-emerald-600">{serviceState.success}</p> : null}{serviceState.error ? <p className="mt-2 text-sm font-bold text-red-600">{serviceState.error}</p> : null}</div><button onClick={requestWaiter} disabled={serviceState.loading || Boolean(serviceState.success)} className="flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 font-black text-white disabled:opacity-60" style={{ backgroundColor: menu.restaurant.secondary_color }}><BellRing className="size-5" />{serviceState.loading ? "Avisando…" : "Llamar a un mesero"}</button></div></section> : null}
-
       <KitchenMiniGames primaryColor={primaryColor} />
 
       {itemCount > 0 ? (
@@ -425,7 +442,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
       ) : null}
 
       <footer className="px-5 pb-4 text-center text-xs font-medium text-slate-400">
-        Menú digital impulsado por <span className="font-extrabold text-brand-navy">CartaYa</span>
+        Menú digital impulsado por <a href="https://tucartaya.com" className="font-extrabold text-brand-navy underline-offset-4 hover:underline">CartaYa</a>
         <ChevronDown className="mx-auto mt-1 size-4" />
       </footer>
     </main>
