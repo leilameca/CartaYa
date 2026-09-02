@@ -15,6 +15,7 @@ Producción: [www.tucartaya.com](https://www.tucartaya.com)
 - Usuarios internos sin correo visible: `mesero` y `cocina`.
 - Solicitudes de asistencia por mesa, aceptación exclusiva y continuidad del mesero asignado.
 - Web Push para pedidos, cocina, meseros, propietarios, soporte y superadministración.
+- Avisos transaccionales por correo y WhatsApp para solicitudes y activaciones de planes.
 - Personalización del menú público desde Plus y del panel interno en Pro.
 - Biblioteca de tutoriales administrada por la superadministradora.
 - Centro de soporte con tickets, conversación, estados, notas internas y capturas cifradas.
@@ -135,7 +136,7 @@ Antes de un lanzamiento público amplio todavía se debe ejecutar una restauraci
    npm install
    ```
 
-2. Copia `.env.example` a `.env.local` y configura Supabase, R2, VAPID y la URL canónica. Las claves privadas nunca deben usar el prefijo `NEXT_PUBLIC_`.
+2. Copia `.env.example` a `.env.local` y configura Supabase, R2, VAPID, la URL canónica y los proveedores transaccionales que vayas a activar. Las claves privadas nunca deben usar el prefijo `NEXT_PUBLIC_`.
 
 3. Enlaza y aplica las migraciones:
 
@@ -178,6 +179,7 @@ Las verificaciones integradas crean tenants temporales y comprueban aislamiento,
 - [Guion de presentación para LinkedIn](docs/guion-video-linkedin.md)
 - [Auditoría de seguridad](docs/security-audit-2026-08-28.md)
 - [Configuración de Cloudflare R2](docs/cloudflare-r2.md)
+- [Notificaciones de cambios de plan](docs/notificaciones-planes.md)
 
 ## Estado
 

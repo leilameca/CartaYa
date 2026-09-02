@@ -19,9 +19,9 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role, restaurants(subscription_tier)").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("role, restaurants(subscription_tier, plan_notifications_whatsapp)").eq("id", user.id).single();
   if (!profile) redirect("/completar-registro");
-  const relation = profile.restaurants as unknown as { subscription_tier: SubscriptionTier } | { subscription_tier: SubscriptionTier }[] | null;
+  const relation = profile.restaurants as unknown as { subscription_tier: SubscriptionTier; plan_notifications_whatsapp: boolean } | { subscription_tier: SubscriptionTier; plan_notifications_whatsapp: boolean }[] | null;
   const restaurant = Array.isArray(relation) ? relation[0] : relation;
   const current = restaurant?.subscription_tier ?? "gratis";
 
@@ -54,6 +54,10 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
               ) : profile.role === "owner" ? (
                 <form action={requestPlanChangeAction} className="mt-6">
                   <input type="hidden" name="tier" value={plan.id} />
+                  <label className="mb-3 flex items-start gap-2 text-xs font-semibold leading-5 text-slate-600">
+                    <input name="notifyWhatsApp" type="checkbox" defaultChecked={restaurant?.plan_notifications_whatsapp ?? false} className="mt-0.5 size-4 rounded border-slate-300 accent-brand-green" />
+                    Avisarme también por WhatsApp al número registrado del restaurante.
+                  </label>
                   <Button className={cn("w-full gap-2 rounded-xl", plan.id === "pro" ? "bg-brand-green hover:bg-brand-green/90" : "bg-brand-orange hover:bg-brand-orange/90")}><Sparkles className="size-4" />Solicitar {planNames[plan.id]}</Button>
                 </form>
               ) : <Button disabled className="mt-6 w-full rounded-xl">Solo el propietario</Button>}

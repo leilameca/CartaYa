@@ -399,6 +399,7 @@ export type Database = {
           logo_url: string | null
           name: string
           opening_hours: Json
+          plan_notifications_whatsapp: boolean
           phone: string | null
           primary_color: string
           secondary_color: string
@@ -415,6 +416,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           opening_hours?: Json
+          plan_notifications_whatsapp?: boolean
           phone?: string | null
           primary_color?: string
           secondary_color?: string
@@ -431,6 +433,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           opening_hours?: Json
+          plan_notifications_whatsapp?: boolean
           phone?: string | null
           primary_color?: string
           secondary_color?: string
