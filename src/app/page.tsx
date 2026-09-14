@@ -64,9 +64,9 @@ export default function HomePage() {
           </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/registro" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-orange px-6 font-black text-white shadow-xl shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-brand-orange/90">Crear mi menú gratis <ArrowRight className="size-5" /></Link>
-            <Link href="/login" className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 font-black transition hover:border-brand-navy">Entrar a mi cuenta</Link>
+            <Link href="/demo" className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 font-black transition hover:border-brand-navy">Explorar demo →</Link>
           </div>
-          <p className="mt-5 text-sm font-semibold text-slate-500">No necesitas tarjeta para comenzar.</p>
+          <p className="mt-5 text-sm font-semibold text-slate-500">Demo: ✓ Sin tarjeta · ✓ Sin registro · ✓ Pruébalo antes de crear tu cuenta</p>
         </Reveal>
 
         <Reveal id="producto" className="relative mx-auto mt-14 max-w-7xl sm:mt-20">
@@ -171,6 +171,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-slate-200 bg-[#fafaf8]">
+        <div className="mx-auto max-w-7xl px-4 pt-6"><Link href="/demo" className="text-sm font-bold text-brand-orange">Explorar demo →</Link></div>
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_auto_auto_auto_auto] lg:px-8">
           <div><BrandLogo className="w-32" /><p className="mt-4 max-w-sm text-sm leading-6 text-slate-500">Menús digitales y operación sencilla para restaurantes.</p></div>
           <div><p className="text-sm font-black">Producto</p><div className="mt-4 grid gap-3 text-sm font-semibold text-slate-500"><a href="#producto" className="hover:text-brand-orange">Vista general</a><a href="#operacion" className="hover:text-brand-orange">Operación</a><a href="#planes" className="hover:text-brand-orange">Planes</a></div></div>

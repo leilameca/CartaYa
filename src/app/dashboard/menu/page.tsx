@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { MenuManager } from "@/components/dashboard/menu-manager";
+import Link from "next/link";
+import { RealMenuManager } from "@/components/dashboard/real-menu-manager";
 import { isR2Configured } from "@/lib/cloudflare/r2";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,14 +29,22 @@ export default async function MenuPage() {
     supabase.from("menu_items").select("id, restaurant_id, category_id, name, description, price, offer_price, image_url, is_available, tag, display_order").eq("restaurant_id", profile.restaurant_id).order("display_order").order("name"),
   ]);
   if (categoriesError || itemsError) throw new Error("No se pudo cargar el menú.");
+  const { data: publicRestaurant } = await supabase.from("restaurants").select("slug").eq("id", profile.restaurant_id).single();
 
   return (
-    <MenuManager
+    <>
+    <nav className="flex flex-wrap gap-4 px-4 pt-5 text-sm font-bold" aria-label="Acciones del menú">
+      <Link data-tour="appearance" href="/dashboard/configuracion">Personalización</Link>
+      {publicRestaurant && <Link data-tour="preview" href={`/r/${publicRestaurant.slug}`} target="_blank" rel="noreferrer">Vista del cliente</Link>}
+      <Link data-tour="publish" href="/dashboard/qr">Compartir enlace y QR</Link>
+    </nav>
+    <RealMenuManager
       restaurantName={restaurant.name}
       tier={restaurant.subscription_tier}
       categories={categories ?? []}
       items={items ?? []}
       r2Configured={isR2Configured()}
     />
+    </>
   );
 }

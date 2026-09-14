@@ -5,7 +5,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, ReactNode, useMemo, useRef, useState, useTransition } from "react";
+import { createContext, FormEvent, ReactNode, useContext, useMemo, useRef, useState, useTransition } from "react";
 import {
   AlertTriangle,
   ArrowDown,
@@ -19,17 +19,6 @@ import {
   Trash2,
   UtensilsCrossed,
 } from "lucide-react";
-import {
-  createCategoryAction,
-  createMenuItemAction,
-  deleteCategoryAction,
-  deleteMenuItemAction,
-  moveCategoryAction,
-  renameCategoryAction,
-  setMenuItemAvailabilityAction,
-  updateMenuItemAction,
-  type MenuActionResult,
-} from "@/app/dashboard/menu/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,6 +51,25 @@ import type { Tables } from "@/types/database";
 type Category = Tables<"categories">;
 type MenuItem = Tables<"menu_items">;
 type Tier = "gratis" | "plus" | "pro";
+export type MenuActionResult = { error?: string; success?: string };
+export type MenuEditorOperations = {
+  createCategory: (formData: FormData) => Promise<MenuActionResult>;
+  renameCategory: (formData: FormData) => Promise<MenuActionResult>;
+  moveCategory: (categoryId: string, direction: "up" | "down") => Promise<MenuActionResult>;
+  deleteCategory: (categoryId: string, confirmationId: string) => Promise<MenuActionResult>;
+  createMenuItem: (formData: FormData) => Promise<MenuActionResult>;
+  updateMenuItem: (formData: FormData) => Promise<MenuActionResult>;
+  setMenuItemAvailability: (menuItemId: string, isAvailable: boolean) => Promise<MenuActionResult>;
+  deleteMenuItem: (menuItemId: string, confirmationId: string) => Promise<MenuActionResult>;
+};
+
+const MenuEditorRuntime = createContext<{ operations: MenuEditorOperations; refreshAfterMutation: boolean } | null>(null);
+
+function useMenuEditorRuntime() {
+  const runtime = useContext(MenuEditorRuntime);
+  if (!runtime) throw new Error("MenuManager requiere operaciones de edición.");
+  return runtime;
+}
 
 const FREE_PLAN_LIMIT_MESSAGE = "Llegaste al límite del plan Gratis — mejora tu plan para agregar más";
 
@@ -94,6 +102,7 @@ async function compressLargeImage(file: File) {
 }
 
 function CategoryDialog({ category, trigger }: { category?: Category; trigger: ReactNode }) {
+  const { operations, refreshAfterMutation } = useMenuEditorRuntime();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
@@ -105,12 +114,12 @@ function CategoryDialog({ category, trigger }: { category?: Category; trigger: R
     const formData = new FormData(event.currentTarget);
     if (category) formData.set("categoryId", category.id);
     startTransition(async () => {
-      const response = category ? await renameCategoryAction(formData) : await createCategoryAction(formData);
+      const response = category ? await operations.renameCategory(formData) : await operations.createCategory(formData);
       setResult(response);
       if (response.success) {
         formRef.current?.reset();
         setOpen(false);
-        router.refresh();
+        if (refreshAfterMutation) router.refresh();
       }
     });
   }
@@ -150,6 +159,7 @@ function DeleteConfirm({
   description: string;
   action: () => Promise<MenuActionResult>;
 }) {
+  const { refreshAfterMutation } = useMenuEditorRuntime();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -175,7 +185,7 @@ function DeleteConfirm({
                 setResult(response);
                 if (response.success) {
                   setOpen(false);
-                  router.refresh();
+                  if (refreshAfterMutation) router.refresh();
                 }
               });
             }}
@@ -200,6 +210,7 @@ function DishDialog({
   r2Configured: boolean;
   trigger: ReactNode;
 }) {
+  const { operations, refreshAfterMutation } = useMenuEditorRuntime();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
@@ -224,12 +235,12 @@ function DishDialog({
           formData.set("image", processed, processed.name);
         }
 
-        const response = item ? await updateMenuItemAction(formData) : await createMenuItemAction(formData);
+        const response = item ? await operations.updateMenuItem(formData) : await operations.createMenuItem(formData);
         setResult(response);
         if (response.success) {
           formRef.current?.reset();
           setOpen(false);
-          router.refresh();
+          if (refreshAfterMutation) router.refresh();
         }
       } catch (error) {
         setResult({ error: error instanceof Error ? error.message : "No pudimos procesar la foto." });
@@ -319,6 +330,7 @@ function DishDialog({
 }
 
 function AvailabilityToggle({ item }: { item: MenuItem }) {
+  const { operations, refreshAfterMutation } = useMenuEditorRuntime();
   const router = useRouter();
   const [checked, setChecked] = useState(item.is_available);
   const [pending, startTransition] = useTransition();
@@ -337,8 +349,8 @@ function AvailabilityToggle({ item }: { item: MenuItem }) {
             setChecked(value);
             setError(null);
             startTransition(async () => {
-              const response = await setMenuItemAvailabilityAction(item.id, value);
-              if (response.error) { setChecked(previous); setError(response.error); } else router.refresh();
+              const response = await operations.setMenuItemAvailability(item.id, value);
+              if (response.error) { setChecked(previous); setError(response.error); } else if (refreshAfterMutation) router.refresh();
             });
           }}
         />
@@ -349,6 +361,7 @@ function AvailabilityToggle({ item }: { item: MenuItem }) {
 }
 
 function DishCard({ item, categories, r2Configured }: { item: MenuItem; categories: Category[]; r2Configured: boolean }) {
+  const { operations } = useMenuEditorRuntime();
   return (
     <article className={`grid gap-4 rounded-2xl border bg-white p-4 shadow-sm transition sm:grid-cols-[88px_1fr_auto] ${item.is_available ? "" : "opacity-70"}`}>
       <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded-xl bg-slate-100 sm:h-20 sm:w-20">
@@ -373,7 +386,7 @@ function DishCard({ item, categories, r2Configured }: { item: MenuItem; categori
           <DeleteConfirm
             title="¿Eliminar este plato?"
             description={`“${item.name}” desaparecerá del menú. Esta acción no se puede deshacer.`}
-            action={() => deleteMenuItemAction(item.id, item.id)}
+            action={() => operations.deleteMenuItem(item.id, item.id)}
             trigger={<Button type="button" variant="ghost" size="icon" className="text-red-600 hover:bg-red-50 hover:text-red-700" aria-label={`Eliminar ${item.name}`}><Trash2 className="h-4 w-4" /></Button>}
           />
         </div>
@@ -399,6 +412,7 @@ function CategorySection({
   total: number;
   r2Configured: boolean;
 }) {
+  const { operations, refreshAfterMutation } = useMenuEditorRuntime();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -406,9 +420,9 @@ function CategorySection({
   function move(direction: "up" | "down") {
     setError(null);
     startTransition(async () => {
-      const response = await moveCategoryAction(category.id, direction);
+      const response = await operations.moveCategory(category.id, direction);
       if (response.error) setError(response.error);
-      else router.refresh();
+      else if (refreshAfterMutation) router.refresh();
     });
   }
 
@@ -429,7 +443,7 @@ function CategorySection({
           <DeleteConfirm
             title="¿Eliminar esta categoría?"
             description={items.length > 0 ? `La categoría “${category.name}” contiene ${items.length} ${items.length === 1 ? "plato" : "platos"}. También se eliminarán esos platos y sus fotos.` : `La categoría “${category.name}” se eliminará permanentemente.`}
-            action={() => deleteCategoryAction(category.id, category.id)}
+            action={() => operations.deleteCategory(category.id, category.id)}
             trigger={<Button type="button" variant="ghost" size="icon" className="text-red-600 hover:bg-red-50 hover:text-red-700" aria-label={`Eliminar ${category.name}`}><Trash2 className="h-4 w-4" /></Button>}
           />
         </div>
@@ -445,12 +459,16 @@ export function MenuManager({
   categories,
   items,
   r2Configured,
+  operations,
+  refreshAfterMutation = false,
 }: {
   restaurantName: string;
   tier: Tier;
   categories: Category[];
   items: MenuItem[];
   r2Configured: boolean;
+  operations: MenuEditorOperations;
+  refreshAfterMutation?: boolean;
 }) {
   const [search, setSearch] = useState("");
   const limitReached = tier === "gratis" && items.length >= 20;
@@ -461,6 +479,7 @@ export function MenuManager({
   }, [items, search]);
 
   return (
+    <MenuEditorRuntime.Provider value={{ operations, refreshAfterMutation }}>
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
@@ -469,14 +488,14 @@ export function MenuManager({
           <p className="mt-2 text-slate-600">Organiza tus categorías, platos, precios, ofertas y disponibilidad.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <CategoryDialog trigger={<Button type="button" variant="outline" className="gap-2"><Plus className="h-4 w-4" />Nueva categoría</Button>} />
-          {limitReached ? (
+          <CategoryDialog trigger={<Button data-tour="categories" type="button" variant="outline" className="gap-2"><Plus className="h-4 w-4" />Nueva categoría</Button>} />
+          <span data-tour="products">{limitReached ? (
             <Button type="button" disabled className="gap-2"><Plus className="h-4 w-4" />Agregar plato</Button>
           ) : categories.length === 0 ? (
             <Button type="button" disabled className="gap-2"><Plus className="h-4 w-4" />Agregar plato</Button>
           ) : (
             <DishDialog categories={categories} r2Configured={r2Configured} trigger={<Button type="button" className="gap-2"><Plus className="h-4 w-4" />Agregar plato</Button>} />
-          )}
+          )}</span>
         </div>
       </div>
 
@@ -518,5 +537,6 @@ export function MenuManager({
         </>
       )}
     </main>
+    </MenuEditorRuntime.Provider>
   );
 }

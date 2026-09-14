@@ -497,6 +497,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      import_demo_menu: { Args: { p_user_id: string; p_menu: Json }; Returns: undefined }
       consume_rate_limit: {
         Args: {
           p_key_hash: string

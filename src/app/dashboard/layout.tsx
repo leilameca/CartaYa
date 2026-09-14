@@ -8,6 +8,8 @@ import { PushNotifications } from "@/components/dashboard/push-notifications";
 import { Button } from "@/components/ui/button";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { ProductTour } from "@/components/demo/product-tour";
+import { DemoImportPrompt } from "@/components/demo/demo-import-prompt";
 
 export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const supabase = await createClient();
@@ -47,7 +49,9 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
           <DashboardNav mobile role={profile.role} tier={restaurant?.subscription_tier ?? "gratis"} />
           <div className="border-t px-4 py-2"><PushNotifications /></div>
         </header>
+        {profile.role === "owner" && <div data-tour="welcome" className="flex flex-wrap items-center gap-3 border-b bg-white px-4 py-2"><span data-tour="identity" className="text-sm font-bold">{restaurant?.name}</span><ProductTour userId={user.id} /></div>}
         {children}
+        {profile.role === "owner" && <DemoImportPrompt userId={user.id} />}
       </div>
       <GlobalRealtimeAlerts restaurantId={profile.restaurant_id} role={profile.role} />
     </div>

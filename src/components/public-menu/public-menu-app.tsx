@@ -55,9 +55,9 @@ function hasOffer(item: PublicMenuItem) {
   return typeof item.offer_price === "number";
 }
 
-export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) {
+export function PublicMenuApp({ initialMenu, mode = "live" }: { initialMenu: PublicMenuData; mode?: "live" | "demo" }) {
   const cacheKey = `cartaya:menu:${initialMenu.restaurant.slug}:${initialMenu.table?.id ?? "general"}`;
-  const [menu, setMenu] = useState<PublicMenuData>(() => {
+  const [cachedMenu, setMenu] = useState<PublicMenuData>(() => {
     if (typeof window === "undefined" || window.navigator.onLine) return initialMenu;
     try {
       const rawCached = window.localStorage.getItem(cacheKey);
@@ -67,6 +67,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
       return initialMenu;
     }
   });
+  const menu = mode === "demo" ? initialMenu : cachedMenu;
   const [cart, setCart] = useState<Cart>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
@@ -77,6 +78,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
   const [serviceState, setServiceState] = useState<{ loading?: boolean; success?: string; error?: string }>({});
 
   useEffect(() => {
+    if (mode === "demo") return;
     const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
     try {
@@ -106,7 +108,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [cacheKey, initialMenu]);
+  }, [cacheKey, initialMenu, mode]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60_000);
@@ -156,6 +158,10 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
 
   async function confirmOrder() {
     if (!canOrder || cartItems.length === 0 || menu.restaurant.subscription_tier === "gratis") return;
+    if (mode === "demo") {
+      setOrderState({ orderId: "DEMO-0001" });
+      return;
+    }
     setOrderState({ loading: true });
 
     try {
@@ -196,6 +202,10 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
 
   async function requestWaiter() {
     if (!menu.table) return;
+    if (mode === "demo") {
+      setServiceState({ success: "Solicitud simulada: un mesero recibió el aviso." });
+      return;
+    }
     setServiceState({ loading: true });
     try {
       const response = await fetch("/api/public/service-requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: menu.restaurant.slug, tableId: menu.table.id }) });
@@ -414,7 +424,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
               </div>
 
               {orderState.error ? <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{orderState.error}</p> : null}
-              {orderState.orderId ? <p role="status" className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"><Check className="size-4" />Pedido registrado. Abriendo WhatsApp…</p> : null}
+              {orderState.orderId ? <p role="status" className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"><Check className="size-4" />{mode === "demo" ? "Pedido simulado correctamente. No se envió información real." : "Pedido registrado. Abriendo WhatsApp…"}</p> : null}
 
               {menu.restaurant.subscription_tier === "gratis" ? (
                 <a
@@ -442,7 +452,7 @@ export function PublicMenuApp({ initialMenu }: { initialMenu: PublicMenuData }) 
       ) : null}
 
       <footer className="px-5 pb-4 text-center text-xs font-medium text-slate-400">
-        Menú digital impulsado por <a href="https://tucartaya.com" className="font-extrabold text-brand-navy underline-offset-4 hover:underline">CartaYa</a>
+        Menú digital impulsado por <a href={mode === "demo" ? "/" : "https://tucartaya.com"} className="font-extrabold text-brand-navy underline-offset-4 hover:underline">CartaYa</a>
         <ChevronDown className="mx-auto mt-1 size-4" />
       </footer>
     </main>

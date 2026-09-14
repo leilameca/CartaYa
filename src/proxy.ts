@@ -13,7 +13,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const pathname = request.nextUrl.pathname;
-  if (pathname.startsWith("/r/") || pathname.startsWith("/api/public/") || pathname === "/offline") {
+  if (pathname === "/demo" || pathname.startsWith("/r/") || pathname.startsWith("/api/public/") || pathname === "/offline") {
     return NextResponse.next();
   }
   return updateSession(request);

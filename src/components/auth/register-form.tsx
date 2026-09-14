@@ -6,6 +6,7 @@ import { FormMessage } from "@/components/auth/form-message";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DemoRestaurantName } from "@/components/auth/demo-restaurant-name";
 
 export function RegisterForm() {
   const [state, action] = useActionState(registerAction, {});
@@ -18,7 +19,7 @@ export function RegisterForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="restaurantName">Nombre del restaurante</Label>
-        <Input id="restaurantName" name="restaurantName" autoComplete="organization" required />
+        <DemoRestaurantName />
       </div>
       <div className="space-y-2">
         <Label htmlFor="slug">Identificador del menú</Label>
